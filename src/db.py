@@ -1,11 +1,12 @@
 # this file contains the database connection and base of the database models
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.session import Session as BaseSession
-from sqlalchemy.ext.declarative import declarative_base
 from contextlib import contextmanager
 from typing import Generator
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session as BaseSession
 
 # create the database connection
 engine = create_engine("sqlite:///counter.db", echo=False)

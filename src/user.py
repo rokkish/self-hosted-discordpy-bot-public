@@ -1,8 +1,8 @@
-import logging
 import datetime
+import logging
 
-from models import User
 from db import session_scope
+from models import User
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

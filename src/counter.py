@@ -1,9 +1,9 @@
-import logging
 import datetime
-from typing import Dict, Any, Union
+import logging
+from typing import Any, Dict, Union
 
-from models import Counter, CounterGroup
 from db import session_scope
+from models import Counter, CounterGroup
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

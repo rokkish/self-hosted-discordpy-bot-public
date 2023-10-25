@@ -2,7 +2,8 @@
 ## user class is used to create the user table
 ## counter class is used to create the counter table
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+
 from db import Base
 
 
