@@ -18,15 +18,6 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
-x_api_key = config["x_api_key"]
-x_api_key_secret = config["x_api_key_secret"]
-x_access_token = config["x_access_token"]
-x_access_token_secret = config["x_access_token_secret"]
-x_bearer_token = config["x_bearer_token"]
-
-STEAM_WEB_API_KEY = config["STEAM_WEB_API_KEY"]
-STEAM_MY_UID = config["STEAM_MY_UID"]
-
 
 @tasks.loop(minutes=60)
 async def loop():
