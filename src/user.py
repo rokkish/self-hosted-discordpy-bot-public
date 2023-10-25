@@ -22,7 +22,8 @@ def register_user(id: int, name: str) -> None:
         session.commit()
         logger.info(f"Added user {user}")
 
+
 def is_user_registered(name: str) -> bool:
     with session_scope() as session:
         user = session.query(User).filter(User.name == name).first()
-        return (user is not None)
+        return user is not None

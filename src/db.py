@@ -8,11 +8,12 @@ from contextlib import contextmanager
 from typing import Generator
 
 # create the database connection
-engine = create_engine('sqlite:///counter.db', echo=False)
+engine = create_engine("sqlite:///counter.db", echo=False)
 # create the session
 Session = sessionmaker(bind=engine)
 # create the base of the models
 Base = declarative_base()
+
 
 @contextmanager
 def session_scope() -> Generator[BaseSession, None, None]:

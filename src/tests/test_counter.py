@@ -20,6 +20,7 @@ class TestData:
     counter_group_name: str = "test_counter_group"
     counter_group_max_count: int = 10
 
+
 test_data = TestData()
 
 
@@ -36,18 +37,20 @@ def register_users(mocker: MockerFixture, test_session: BaseSession) -> None:
     for user_name in test_data.user_names:
         assert is_user_registered(user_name)
 
+
 def setup_counter_group(mocker: MockerFixture, test_session: BaseSession) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
-    create_counter_group(test_data.counter_group_name, test_data.counter_group_max_count)
+    create_counter_group(
+        test_data.counter_group_name, test_data.counter_group_max_count
+    )
     assert is_counter_group_name_created(test_data.counter_group_name)
+
 
 @pytest.fixture(scope="function")
 def test_session(mocker: MockerFixture) -> Generator[BaseSession, None, None]:
     engine = create_engine(
-        test_data.db_url,
-        echo=True,
-        connect_args={"check_same_thread": False}
+        test_data.db_url, echo=True, connect_args={"check_same_thread": False}
     )
     Base.metadata.create_all(engine)
 
@@ -71,7 +74,9 @@ def test_session(mocker: MockerFixture) -> Generator[BaseSession, None, None]:
         session.close()
 
 
-def test_update_counter_group_max_count(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_update_counter_group_max_count(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     update_counter_group_max_count(test_data.counter_group_name, 20)
@@ -89,6 +94,7 @@ def test_get_latest_counter(mocker: MockerFixture, test_session: BaseSession) ->
     assert c["attempt"] == 1
     assert c["status"]
 
+
 # test_length = 3
 def test_get_latest_counter_3(mocker: MockerFixture, test_session: BaseSession) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
@@ -102,8 +108,11 @@ def test_get_latest_counter_3(mocker: MockerFixture, test_session: BaseSession) 
     assert c["attempt"] == 1
     assert c["status"]
 
+
 # fail case
-def test_get_latest_counter_failed(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_get_latest_counter_failed(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
@@ -115,11 +124,15 @@ def test_get_latest_counter_failed(mocker: MockerFixture, test_session: BaseSess
     assert c["attempt"] == 2
     assert c["status"]
 
+
 # unit test for check_increment
 def test_check_increment(mocker: MockerFixture, test_session: BaseSession) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
-    is_incremented = check_increment(test_data.user_ids[0], test_data.counter_group_id, 1, 1)
+    is_incremented = check_increment(
+        test_data.user_ids[0], test_data.counter_group_id, 1, 1
+    )
     assert is_incremented
+
 
 # unit test for get_latest_attempt
 def test_get_latest_attempt(mocker: MockerFixture, test_session: BaseSession) -> None:
@@ -127,8 +140,11 @@ def test_get_latest_attempt(mocker: MockerFixture, test_session: BaseSession) ->
     attempt = get_latest_attempt(test_data.counter_group_id)
     assert attempt == 1
 
+
 # use wrapper
-def test_try_increment_counter(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
@@ -136,8 +152,11 @@ def test_try_increment_counter(mocker: MockerFixture, test_session: BaseSession)
     assert ret["attempt"] == 1
     assert ret["status"]
 
+
 ## long case
-def test_try_increment_counter_long(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_long(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
@@ -153,31 +172,46 @@ def test_try_increment_counter_long(mocker: MockerFixture, test_session: BaseSes
     assert ret["attempt"] == 1
     assert ret["status"]
 
+
 ## 2 attempt
-def test_try_increment_counter_long_twice(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_long_twice(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
     _ = try_increment_counter(test_data.user_ids[1], test_data.counter_group_id, 2)
-    _ = try_increment_counter(test_data.user_ids[2], test_data.counter_group_id, 4) # fail
+    _ = try_increment_counter(
+        test_data.user_ids[2], test_data.counter_group_id, 4
+    )  # fail
     _ = try_increment_counter(test_data.user_ids[1], test_data.counter_group_id, 1)
     ret = try_increment_counter(test_data.user_ids[2], test_data.counter_group_id, 2)
     assert ret["attempt"] == 2
     assert ret["status"]
 
+
 ## 2 attempt: start fail
-def test_try_increment_counter_long_twice_fail(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_long_twice_fail(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
     _ = try_increment_counter(test_data.user_ids[1], test_data.counter_group_id, 2)
-    _ = try_increment_counter(test_data.user_ids[2], test_data.counter_group_id, 4) # fail
-    ret = try_increment_counter(test_data.user_ids[1], test_data.counter_group_id, 2) # fail
+    _ = try_increment_counter(
+        test_data.user_ids[2], test_data.counter_group_id, 4
+    )  # fail
+    ret = try_increment_counter(
+        test_data.user_ids[1], test_data.counter_group_id, 2
+    )  # fail
     assert ret["attempt"] == 2
     assert ret["status"] == False
 
+
 ## long fail case over limit
-def test_try_increment_counter_over(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_over(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     assert test_data.counter_group_max_count == 10
@@ -195,16 +229,22 @@ def test_try_increment_counter_over(mocker: MockerFixture, test_session: BaseSes
     assert ret["attempt"] == 1
     assert ret["status"] == False
 
+
 ## bug case (id start from 1 not 0)
-def test_try_increment_counter_bug(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_bug(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], 0, 1, 1, True)
     with pytest.raises(Exception):
         _ = try_increment_counter(test_data.user_ids[1], 0, 3)
 
+
 ## fail case: skip
-def test_try_increment_counter_fail_skip_count(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_fail_skip_count(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
@@ -212,8 +252,11 @@ def test_try_increment_counter_fail_skip_count(mocker: MockerFixture, test_sessi
     assert ret["attempt"] == 1
     assert ret["status"] == False
 
+
 ## fail case: duplicate user
-def test_try_increment_counter_fail_duplicate_user(mocker: MockerFixture, test_session: BaseSession) -> None:
+def test_try_increment_counter_fail_duplicate_user(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
     mocker.patch("counter.session_scope", return_value=test_session)
 
     record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)

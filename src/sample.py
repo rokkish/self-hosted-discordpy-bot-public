@@ -26,15 +26,18 @@ COUNTER_REACTION = {
     False: "❌",
 }
 
+
 @tasks.loop(minutes=60)
 async def loop():
     now = datetime.datetime.now().strftime("%H:%M")
     # print(f"loop {now=}")
 
+
 @client.event
 async def on_ready():
     print(f"We have logged in as {client.user}")
     await loop.start()
+
 
 @client.event
 async def on_message(message: discord.Message):
@@ -47,7 +50,9 @@ async def on_message(message: discord.Message):
     for key, value in meme_dict.items():
         if message.content.startswith(key):
             if isinstance(value, list):
-                await message.channel.send("", file=discord.File(f"{random.choice(value)}"))
+                await message.channel.send(
+                    "", file=discord.File(f"{random.choice(value)}")
+                )
             else:
                 await message.channel.send("", file=discord.File(f"{value}"))
     if message.content.startswith("$meme_list"):
@@ -59,7 +64,7 @@ async def on_message(message: discord.Message):
         await message.add_reaction("👀")
         await message.channel.send("https://www.netflix.com/browse?jbv=81046193")
 
-    if int(config["DISCORD_CHANNEL_ID_MAIN"]) != None: #message.channel.id:
+    if int(config["DISCORD_CHANNEL_ID_MAIN"]) != None:  # message.channel.id:
         if message.content.startswith("未熟"):
             with session_scope() as _:
                 counter_group_id = get_counter_group_id(CounterKawaki.name)
@@ -81,7 +86,10 @@ async def on_message(message: discord.Message):
                 result = try_increment_counter(message.author.id, counter_group_id, 4)
                 await message.add_reaction(COUNTER_REACTION[result["status"]])
                 if result["status"]:
-                    await message.channel.send("[カワキヲアメク](https://open.spotify.com/track/1gUAX2ImxDsB3YDcyxMXlB?si=6baee244e48f4235)")
+                    await message.channel.send(
+                        "[カワキヲアメク](https://open.spotify.com/track/1gUAX2ImxDsB3YDcyxMXlB?si=6baee244e48f4235)"
+                    )
+
 
 # logger.info(config['token'])
 client.run(config["token"])

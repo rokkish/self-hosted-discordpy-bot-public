@@ -1,4 +1,3 @@
-
 from typing import Dict, Union
 
 meme_dict: Dict[str, Union[str, list]] = {
