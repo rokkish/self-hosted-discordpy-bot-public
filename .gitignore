@@ -4,3 +4,10 @@
 *.jpg
 
 .env
+
+*.pyc
+
+.coverage
+*.db
+
+htmlcov

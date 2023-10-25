@@ -1,0 +1,3 @@
+# set ignore files by test coverage in .coveragerc
+[run]
+omit = **/tests/*
