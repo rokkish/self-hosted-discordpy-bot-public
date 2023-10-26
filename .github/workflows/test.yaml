@@ -25,7 +25,11 @@ jobs:
           .venv/bin/poetry install
       - name: Run pytest
         run: |
-          .venv/bin/poetry run pytest ./src/tests --cov ./src --cov-branch -vvv
+          .venv/bin/poetry run pytest ./src/tests --cov-report "xml:coverage.xml" --cov ./src --cov-branch -vvv
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: ./coverage.xml
   action-timeline:
     runs-on: [self-hosted]
     needs: test
