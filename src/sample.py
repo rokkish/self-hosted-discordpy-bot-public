@@ -9,7 +9,7 @@ from dotenv import dotenv_values
 from counter import get_counter_group_id, try_increment_counter
 from data.counter_kawaki import CounterKawaki
 from db import session_scope
-from meme import meme_dict
+from data.meme import meme_dict
 
 logger = logging.getLogger("sample")
 logger.setLevel(logging.DEBUG)
