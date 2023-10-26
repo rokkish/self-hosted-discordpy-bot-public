@@ -1,0 +1,35 @@
+name: test
+on:
+  push:
+    branches: [main]
+    # only trigger *.py file changes
+    paths:
+      - '**.py'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: [ubuntu-23.04]
+    container:
+      image: python:3.10-slim
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python venv
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -U pip setuptools
+          .venv/bin/pip install poetry
+      - name: Install poetry dependencies
+        run: |
+          .venv/bin/poetry install
+      - name: Run pytest
+        run: |
+          .venv/bin/poetry run pytest ./src/tests --cov ./src --cov-branch -vvv
+  action-timeline:
+    runs-on: [ubuntu-23.04]
+    needs: test
+    permissions:
+      actions: read
+    steps:
+      - uses: Kesin11/actions-timeline@v1
