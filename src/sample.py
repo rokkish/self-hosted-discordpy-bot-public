@@ -1,3 +1,4 @@
+import sys
 import datetime
 import logging
 import random
@@ -74,4 +75,12 @@ async def on_message(message: discord.Message):
                     await message.channel.send(CounterKawaki.complete_msg)
 
 # logger.info(config['token'])
-client.run(config["token"])
+
+# config["token"] is str or none. but client.run() need str.
+# how to error handling?
+
+if config["token"] is None:
+    logger.error("token is None.")
+    sys.exit(1)
+else:
+    client.run(config["token"])
