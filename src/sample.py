@@ -64,32 +64,14 @@ async def on_message(message: discord.Message):
         await message.add_reaction("👀")
         await message.channel.send("https://www.netflix.com/browse?jbv=81046193")
 
-    if int(config["DISCORD_CHANNEL_ID_MAIN"]) != None:  # message.channel.id:
-        if message.content.startswith("未熟"):
+    for i, v in enumerate(CounterKawaki.data):
+        if message.content.startswith(v):
             with session_scope() as _:
                 counter_group_id = get_counter_group_id(CounterKawaki.name)
-                result = try_increment_counter(message.author.id, counter_group_id, 1)
+                result = try_increment_counter(message.author.id, counter_group_id, i + 1)
                 await message.add_reaction(COUNTER_REACTION[result["status"]])
-        if message.content.startswith("無ジョウ"):
-            with session_scope() as _:
-                counter_group_id = get_counter_group_id(CounterKawaki.name)
-                result = try_increment_counter(message.author.id, counter_group_id, 2)
-                await message.add_reaction(COUNTER_REACTION[result["status"]])
-        if message.content.startswith("されど"):
-            with session_scope() as _:
-                counter_group_id = get_counter_group_id(CounterKawaki.name)
-                result = try_increment_counter(message.author.id, counter_group_id, 3)
-                await message.add_reaction(COUNTER_REACTION[result["status"]])
-        if message.content.startswith("美しくあれ"):
-            with session_scope() as _:
-                counter_group_id = get_counter_group_id(CounterKawaki.name)
-                result = try_increment_counter(message.author.id, counter_group_id, 4)
-                await message.add_reaction(COUNTER_REACTION[result["status"]])
-                if result["status"]:
-                    await message.channel.send(
-                        "[カワキヲアメク](https://open.spotify.com/track/1gUAX2ImxDsB3YDcyxMXlB?si=6baee244e48f4235)"
-                    )
-
+                if result["status"] and i == CounterKawaki.max_count - 1:
+                    await message.channel.send(CounterKawaki.complete_msg)
 
 # logger.info(config['token'])
 client.run(config["token"])
