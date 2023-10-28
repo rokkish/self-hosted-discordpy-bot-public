@@ -13,8 +13,8 @@ from user import *
 
 
 class TestData:
-    user_ids: list[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    user_names: list[str] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+    user_ids: list[int] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    user_names: list[str] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]
     db_url: str = "sqlite:///:memory:"
     counter_group_id: int = 1
     counter_group_name: str = "test_counter_group"
@@ -226,9 +226,32 @@ def test_try_increment_counter_over(
     _ = try_increment_counter(test_data.user_ids[8], test_data.counter_group_id, 9)
     _ = try_increment_counter(test_data.user_ids[9], test_data.counter_group_id, 10)
     ret = try_increment_counter(test_data.user_ids[0], test_data.counter_group_id, 11)
-    assert ret["attempt"] == 1
+    assert ret["attempt"] == 2
     assert ret["status"] == False
 
+
+## long case after 1 success
+def test_try_increment_counter_after_success(
+    mocker: MockerFixture, test_session: BaseSession
+) -> None:
+    mocker.patch("counter.session_scope", return_value=test_session)
+
+    assert test_data.counter_group_max_count == 10
+    record_counter(test_data.user_ids[0], test_data.counter_group_id, 1, 1, True)
+    _ = try_increment_counter(test_data.user_ids[1], test_data.counter_group_id, 2)
+    _ = try_increment_counter(test_data.user_ids[2], test_data.counter_group_id, 3)
+    _ = try_increment_counter(test_data.user_ids[3], test_data.counter_group_id, 4)
+    _ = try_increment_counter(test_data.user_ids[4], test_data.counter_group_id, 5)
+    _ = try_increment_counter(test_data.user_ids[5], test_data.counter_group_id, 6)
+    _ = try_increment_counter(test_data.user_ids[6], test_data.counter_group_id, 7)
+    _ = try_increment_counter(test_data.user_ids[7], test_data.counter_group_id, 8)
+    _ = try_increment_counter(test_data.user_ids[8], test_data.counter_group_id, 9)
+    ret1 = try_increment_counter(test_data.user_ids[9], test_data.counter_group_id, 10)
+    assert ret1["attempt"] == 1
+    assert ret1["status"] == True
+    ret2 = try_increment_counter(test_data.user_ids[10], test_data.counter_group_id, 1)
+    assert ret2["attempt"] == 2
+    assert ret2["status"] == True
 
 ## bug case (id start from 1 not 0)
 def test_try_increment_counter_bug(

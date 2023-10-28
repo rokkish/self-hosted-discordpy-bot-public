@@ -138,8 +138,23 @@ def get_latest_attempt(counter_group_id: int) -> int:
     if c is None:
         return 1
     else:
+        with session_scope() as session:
+            counter_group = (
+                session.query(CounterGroup)
+                .filter(CounterGroup.id == counter_group_id)
+                .first()
+            )
+            if counter_group is None:
+                raise Exception(f"Counter group {counter_group_id} not found")
+            max_count = get_counter_group_max_count(counter_group.name)
+
+        # prev count is unsuccessful
         if c["status"] == False:
             return c["attempt"] + 1
+        # prev attempt is successful
+        elif c["status"] and c["count"] == max_count:
+            return c["attempt"] + 1
+        # prev attempt is successful but not max count
         return c["attempt"]
 
 
