@@ -50,7 +50,7 @@ def setup_counter_group(mocker: MockerFixture, test_session: BaseSession) -> Non
 @pytest.fixture(scope="function")
 def test_session(mocker: MockerFixture) -> Generator[BaseSession, None, None]:
     engine = create_engine(
-        test_data.db_url, echo=True, connect_args={"check_same_thread": False}
+        test_data.db_url, echo=False, connect_args={"check_same_thread": False}
     )
     Base.metadata.create_all(engine)
 
