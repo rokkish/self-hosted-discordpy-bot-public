@@ -280,6 +280,10 @@ class Quiz():
             return "もうヒントはありません"
         h = random.choice(self.noun_dict[strength])
         self.noun_dict[strength].remove(h)
+        if h == self.title:
+            return "(答えと同じためヒントを表示できません)"
+        if len(self.__remove_symbol(h)) == 0:
+            return "(記号のみのためヒントを表示できません)"
         return h
 
     def get_image(self) -> Tuple[str, str]:
