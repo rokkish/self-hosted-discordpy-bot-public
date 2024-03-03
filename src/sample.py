@@ -105,6 +105,7 @@ async def on_message(message: discord.Message):
             if quiz.is_correct(message.content):
                 quiz.update_answered()
                 logger.debug("correct!")
+                await message.channel.send("おめでとう！正解だ！")
                 return
             if quiz.is_close(message.content):
                 masked_title = quiz.get_masked_title(message.content)
@@ -174,6 +175,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         quiz = Quiz(NUM_MAX_HINT=20)
         # quiz.setup_quiz(theme)
         theme = quiz.pick_theme_from_genre(genre.value)
+        logger.debug(f"{theme=}")
         await send_msg.edit(content=f"{p_bar.print('テーマ選定 done...')}")
 
         quiz.title = quiz.get_title(theme)
