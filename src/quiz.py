@@ -41,6 +41,8 @@ class Quiz():
             "音楽",
         ]
         self.genre = QuizGenresChoices.ノンジャンル
+        self.genres_not_search = [QuizGenresChoices.都道府県.value, QuizGenresChoices.化学_理系学問.value, QuizGenresChoices.スポーツ.value]
+        self.genres_not_open_hint = [QuizGenresChoices.都道府県.value]
         self.title = ""
         self.title_near: list[str] = []
         self.summary = ""
@@ -106,7 +108,7 @@ class Quiz():
         black_list = ["一覧", "リスト"]
         title_candidates = [x for x in title_candidates if not any(bl in x for bl in black_list)]
         # cut endwith blacklist
-        black_list_ends = ["市", "町", "村", "県", "区", "府", "都", "国", "地方", "地域", "地区", "地"]
+        black_list_ends = ["市", "町", "村", "区", "国", "地方", "地域", "地区", "地"]
         title_candidates = [x for x in title_candidates if not x.endswith(tuple(black_list_ends))]
         # cut n 月 m 日
         title_candidates = [x for x in title_candidates if not re.match(r"\d+月\d+日", x)]
@@ -131,8 +133,7 @@ class Quiz():
         summary = summary.lower()
         replaced_title = "〇"*len(title)
         summary = self.__remove_space(summary)
-        if self.genre == QuizGenresChoices.映画:
-            summary =  re.compile('『』').sub("", summary)
+        summary = summary.replace("『", "").replace("』", "")
         summary = re.sub(f"{title}"+r"（.*?）", replaced_title, summary)
         summary = re.sub(f"{title}"+r"\(.*?\)", replaced_title, summary)
         summary = re.sub(f"{title}", replaced_title, summary)
@@ -217,6 +218,7 @@ class Quiz():
                 "UI_icon",
                 "Wiki_letter_w",
                 "Folder_Hexagonal",
+                "Ambox_",
                 "Decrease",
                 "Increase",
             ]
@@ -242,7 +244,6 @@ class Quiz():
         """出現頻度の高い名詞リストを返す関数
         """
         # q. prompt:ランダムな名詞を返す関数を定義したい
-        # a. 以下のように定義することで、ランダムな名詞を返す関数を定義できます。
         # 1. MeCab.Tagger()をインスタンス化
         # 2. parse()で形態素解析
         # 3. 名詞のリストを作成
@@ -251,6 +252,7 @@ class Quiz():
         parsed = tagger.parse(input_txt)
         logger.info("Mecab parsed!")
         nouns = [line.split("\t")[0] for line in parsed.split("\n") if "名詞" in line]
+        # nouns_uniq = [line.split("\t")[0] for line in parsed.split("\n") if "固有名詞" in line]
         # ヒントとして無効な文字列を削除する
         nouns = [noun for noun in nouns if len(noun) > self.MIN_HINT_WORD_LEN]
         # 記号を削除する
