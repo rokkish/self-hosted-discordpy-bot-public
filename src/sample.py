@@ -314,12 +314,12 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
 
     wait(5)
     if not quiz.already_answered:
-        part_title = quiz.get_part_of_title(0.75)
-        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
     wait(5)
     if not quiz.already_answered:
-        await channel.send(f"### 大ヒント！\n{quiz.summary}")
+        part_title = quiz.get_part_of_title(0.75)
+        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
     wait(10)
     if not quiz.force_answer:
