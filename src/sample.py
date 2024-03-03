@@ -328,11 +328,6 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
             await channel.send(f"----------------------------------\n残念 時間切れだ...")
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
-# logger.info(config['token'])
-
-# config["token"] is str or none. but client.run() need str.
-# how to error handling?
-
 if config["token"] is None:
     logger.error("token is None.")
     sys.exit(1)
