@@ -4,6 +4,8 @@ import random
 import collections
 import wikipedia
 import logging
+from typing import Tuple
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -18,7 +20,7 @@ logger.addHandler(stream_handler)
 
 # wikipedia の title を当てるゲームを管理するクラス
 class Quiz():
-    def __init__(self):
+    def __init__(self, /, NUM_MAX_HINT=30):
         super().__init__()
         self.search_themes = [
             "onepiece",
@@ -39,73 +41,98 @@ class Quiz():
             "音楽",
         ]
         self.title = ""
-        self.title_no_symbol = ""
-        self.title_no_theme = ""
+        self.title_near: list[str] = []
         self.summary = ""
         self.input_txt = ""
-        self.noun_list = {"HIGH": [], "LOW": []}
+        self.categories: list[str] = []
+        self.images: list[str] = []  # url of images
+        self.noun_dict = {"HIGH": [], "LOW": []}
         self.maintanance = False
         self.MIN_HINT_WORD_LEN = 2
-        self.NUM_MAX_HINT = 30
+        self.NUM_MAX_HINT = NUM_MAX_HINT
+        self.NUM_SEARCH = 20
         self.NUM_HIGH_HINT = 5
         self.already_answered = False
+        self.force_answer = False  # 強制的に回答を表示したかどうか 
 
     def get_themes(self) -> list:
         return self.search_themes
 
     def setup_quiz(self, search_theme: str):
         self.title = self.get_title(search_theme)
-        no_space = re.sub(r"\s", "", self.title)
-        self.title_no_symbol = re.compile('[!"#$%&\'\\\\()*+,-./:;<=>?@[\\]^_`{|}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。、？！｀＋￥％]').sub("", no_space)
-        self.title_no_theme = re.sub(search_theme, "", self.title)
+        self.title_near = self.get_title_near(search_theme, self.title)
         self.summary = self.get_summary(self.title)
         self.input_txt = self.get_txt(self.title)
-        bare_noun_list = self.get_topk_noun(self.input_txt)
-        self.noun_list["HIGH"] = [noun for noun, _ in bare_noun_list[:self.NUM_HIGH_HINT]]
-        self.noun_list["LOW"] = [noun for noun, _ in bare_noun_list[self.NUM_HIGH_HINT:]]
+        self.categories = self.get_categories(self.title)
+        self.noun_dict = self.get_topk_noun(self.input_txt)
+
+    def get_title_near(self, search_theme: str, title: str) -> list:
+        no_theme = self.__remove_theme(search_theme, title)
+        no_space = self.__remove_space(no_theme)
+        no_symbol = self.__remove_symbol(no_space)
+        return [
+            no_theme,
+            no_space,
+            no_symbol,
+        ]
+
+    def __remove_theme(self, search_theme: str, title: str) -> str:
+        search_theme = self.__remove_space(search_theme)
+        search_theme = self.__remove_txt_in_symbol(search_theme)
+        search_theme = self.__remove_symbol(search_theme)
+        title = self.__remove_space(title)
+        title = self.__remove_txt_in_symbol(title)
+        title = self.__remove_symbol(title)
+        return re.sub(search_theme, "", title).lower()
+    def __remove_space(self, inp: str) -> str:
+        return re.sub(r"\s", "", inp).lower()
+    def __remove_txt_in_symbol(self, inp: str) -> str:
+        return re.sub(r"（.*?）|\(.*?\)", "", inp).lower()
+    def __remove_symbol(self, inp: str) -> str:
+        return re.compile('[!"#$%&\'\\\\()*+,-./:;<=>?@[\\]^_`{|}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。、？！｀＋￥％]').sub("", inp).lower()
 
     def get_title(self, search_theme: str) -> str:
         """title を設定する関数"""
         # q. prompt:Wikipedia の title をランダムに設定する関数を定義したい
         wikipedia.set_lang("ja")
-        title_candidates = wikipedia.search(search_theme, results=20)
+        title_candidates = wikipedia.search(search_theme, results=self.NUM_SEARCH)
         logger.debug("wikipedia Searched...")
         # cut candidates lengh of str over 10
         title_candidates = [x for x in title_candidates if len(x) < 10]
+        if len(title_candidates) == 0:
+            raise Exception("No title candidates under 10 char")
         # cut candidates that include search_theme
         title_candidates = [x for x in title_candidates if search_theme != x]
         if len(title_candidates) == 0:
             raise Exception("No title candidates")
 
-        while True:
-            title = random.choice(title_candidates)
-            if title != search_theme:
-                break
+        title = random.choice(title_candidates)
         return title
 
     def get_summary(self, title: str) -> str:
         summary = wikipedia.summary(title)
         logger.debug("wikipedia Got summary...")
         # summary から title とカッコ内の文字列(読み仮名、英語表記）を削除
-        summary = re.sub(f"{title}", "XXXX", summary)
-        summary = re.sub(r"（.*）", "YYYY", summary)
-        # title を１文字に分解して、summary から削除
-        try:
-            for char in set(title):
-                logging.debug(f"char: {char}")
-                summary = re.sub(char, "Z", summary)
-        except Exception as e:
-            logging.error(e)
-        finally:
-            return summary
+        replaced_title = "〇"*len(title)
+        summary = self.__remove_space(summary)
+        summary = re.sub(f"{title}"+r"（.*?）", replaced_title, summary)
+        summary = re.sub(f"{title}"+r"\(.*?\)", replaced_title, summary)
+        summary = re.sub(f"{title}", replaced_title, summary)
+        # # title を１文字に分解して、summary から削除
+        # try:
+        #     for char in set(title):
+        #         logging.debug(f"char: {char}")
+        #         summary = re.sub(char, "Z", summary)
+        # except Exception as e:
+        #     logging.error(e)
+        # finally:
+        return summary
 
     def is_correct(self, answer: str) -> bool:
         """回答が正しいかどうかを判定する関数"""
         ans = answer.lower()
         title = self.title.lower()
-        title_no_symbol = self.title_no_symbol.lower()
-        title_no_theme = self.title_no_theme.lower()
-        return ans == title or ans == title_no_symbol or ans == title_no_theme
+        return ans in [title, *self.title_near]
 
     # 回答が惜しいかどうかを判定する関数
     def is_close(self, answer: str) -> bool:
@@ -156,11 +183,36 @@ class Quiz():
             logger.debug("wikipedia Got page")
             return txt
         except wikipedia.exceptions.DisambiguationError as e:
-            return e.options
+            return e
         except wikipedia.exceptions.PageError:
             return ""
 
-    def get_topk_noun(self, input_txt: str) -> str:
+    def get_images(self, title: str) -> list:
+        """title から Wikipedia の記事の画像を取得する関数
+        """
+        wikipedia.set_lang("ja")
+        try:
+            images = wikipedia.page(title).images
+            # drop UI_icon_edit
+            images = [i for i in images if not "UI_icon_edit" in i]
+            return images
+        except wikipedia.exceptions.DisambiguationError as e:
+            return []
+        except wikipedia.exceptions.PageError:
+            return []
+    def get_categories(self, title: str) -> list:
+        """title から Wikipedia の記事のカテゴリを取得する関数
+        """
+        wikipedia.set_lang("ja")
+        try:
+            categories = wikipedia.page(title).categories
+            return categories
+        except wikipedia.exceptions.DisambiguationError as e:
+            return []
+        except wikipedia.exceptions.PageError:
+            return []
+
+    def get_topk_noun(self, input_txt: str) -> dict:
         """出現頻度の高い名詞リストを返す関数
         """
         # q. prompt:ランダムな名詞を返す関数を定義したい
@@ -180,18 +232,25 @@ class Quiz():
         # 数字を削除する
         nouns = [noun for noun in nouns if not noun.isdigit()]
         nouns_list = collections.Counter(nouns).most_common(self.NUM_MAX_HINT)
-        return nouns_list
+        # ヒントのランク設定
+        noun_dict = {}
+        noun_dict["HIGH"] = [noun for noun, _ in nouns_list[:self.NUM_HIGH_HINT]]
+        noun_dict["LOW"] = [noun for noun, _ in nouns_list[self.NUM_HIGH_HINT:]]
+        return noun_dict
 
     # 残りのヒント数
     def remain_hint(self, strength: str) -> int:
-        return len(self.noun_list[strength])
+        return len(self.noun_dict[strength])
     def all_remain_hint(self) -> str:
-        return f"HIGH: {len(self.noun_list['HIGH'])}\nLOW: {len(self.noun_list['LOW'])}\n"
+        return f"HIGH: {len(self.noun_dict['HIGH'])}\nLOW: {len(self.noun_dict['LOW'])}\n"
 
     def exist_hint(self, strength: str) -> bool:
         """ヒントが存在するかどうかを判定する関数
         """
-        return len(self.noun_list[strength]) > 0
+        return len(self.noun_dict[strength]) > 0
+
+    def exist_hint_image(self) -> bool:
+        return len(self.images) > 0
 
     def get_hint(self, strength: str) -> str:
         """ヒントを返す関数
@@ -199,9 +258,44 @@ class Quiz():
         # choice random and remove it from list
         if not self.exist_hint(strength):
             return "もうヒントはありません"
-        h = random.choice(self.noun_list[strength])
-        self.noun_list[strength].remove(h)
+        h = random.choice(self.noun_dict[strength])
+        self.noun_dict[strength].remove(h)
         return h
+
+    def get_image(self) -> Tuple[str, str]:
+        import requests
+        import tempfile
+        from PIL import Image
+        from io import BytesIO
+        def _load_image(url: str) -> str:
+            response = requests.get(url, stream=True)
+            response.raw.decode_content = True
+            if "jpg" in url:
+                img = Image.open(BytesIO(response.content))
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
+                    img.save(f, "JPEG")
+                    return f.name
+            elif "svg" in url:
+                # svg を jpeg として保存する with cairosvg
+                import cairosvg
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as f:
+                    cairosvg.svg2png(bytestring=response.content, write_to=f.name)
+                    return f.name
+            return ""
+      
+        if len(self.images) == 0:
+            return ("画像ヒントはありません", "")
+        i = random.choice(self.images)
+        self.images.remove(i)
+        path_to_tmp_img = _load_image(i)
+        return ("画像ヒント", path_to_tmp_img)
+
+    def get_category(self) -> str:
+        if len(self.categories) == 0:
+            return "もうカテゴリヒントはありません"
+        c = random.choice(self.categories)
+        self.categories.remove(c)
+        return c
 
     def get_answer(self) -> str:
         return self.title
@@ -214,7 +308,7 @@ class Quiz():
         # print(f"{self.title=}")
         # print(f"{self.summary=}")
         # print(f"{self.input_txt[:100]=}")
-        # print(f"{self.noun_list=}")
+        # print(f"{self.noun_dict=}")
         # print(f"{self.is_correct(self.title)=}")
         print(f"{self.get_hint('LOW')=}")
         print(f"{self.get_hint('LOW')=}")
@@ -225,7 +319,7 @@ class Quiz():
         # print(f"{self.title=}")
         # print(f"{self.summary=}")
         # print(f"{self.input_txt[:100]=}")
-        # print(f"{self.noun_list=}")
+        # print(f"{self.noun_dict=}")
         # print(f"{self.is_correct(self.title)=}")
         print(f"{self.get_hint('LOW')=}")
         print(f"{self.get_hint('LOW')=}")
@@ -235,7 +329,7 @@ class Quiz():
         # print(f"{self.title=}")
         # print(f"{self.summary=}")
         # print(f"{self.input_txt[:100]=}")
-        # print(f"{self.noun_list=}")
+        # print(f"{self.noun_dict=}")
         # print(f"{self.is_correct(self.title)=}")
         print(f"{self.get_hint('LOW')=}")
         print(f"{self.get_hint('LOW')=}")

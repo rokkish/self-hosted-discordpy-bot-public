@@ -1,10 +1,12 @@
 import sys
+import enum
 import datetime
 import logging
 import random
 
 import discord
 from discord import app_commands
+from discord.app_commands import Choice
 from discord.ext import tasks
 from dotenv import dotenv_values
 
@@ -112,41 +114,85 @@ async def on_message(message: discord.Message):
         pass
 
 @client.tree.command(
+    name="qquiz",
+    description="quit quiz（進行中のクイズを強制終了させる）",
+)
+async def quit_quiz(interaction: discord.Interaction) -> None:
+    global quiz
+    try:
+        quiz.already_answered = True
+        quiz.force_answer = True
+        await interaction.response.send_message(f"クイズを強制終了したぞ！")
+    except NameError:
+        await interaction.response.send_message(f"強制終了するクイズはないぞ！")
+
+
+@client.tree.command(
     name="quiz",
     description="連想されるキーワードを当ててくれ!",
 )
-@app_commands.describe(theme="好きなテーマを単語で入力してくれ！")
+@app_commands.describe(
+    theme="好きなテーマを単語で入力してくれ！",
+)
 async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     """クイズを出題する関数"""
     from quiz import Quiz
     import time
     global quiz
 
-    if interaction.channel_id != int(config["DISCORD_CHANNEL_ID_QUIZ"]):
+    if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
         await interaction.response.send_message(f"このチャンネルでは無効だ！")
         return
 
     channel = client.get_channel(interaction.channel_id)
 
-    await interaction.response.send_message(f"テーマは{theme}だな！")
+    await interaction.response.send_message(f"[...]テーマは{theme}だな！")
 
-    quiz = Quiz()
     try:
-        quiz.setup_quiz(theme)
-    except Exception("No title candidates") as e:
+        quiz = Quiz(NUM_MAX_HINT=30)
+        # quiz.setup_quiz(theme)
+        quiz.title = quiz.get_title(theme)
+        quiz.title_near = quiz.get_title_near(theme, quiz.title)
+        await channel.send(f"[x..]タイトル選定 done...")
+        quiz.input_txt = quiz.get_txt(quiz.title)
+        quiz.categories = quiz.get_categories(quiz.title)
+        quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
+        await channel.send(f"[xx.]ヒント生成 done...")
+        quiz.summary = quiz.get_summary(quiz.title)
+        quiz.images = quiz.get_images(quiz.title)
+        await channel.send(f"[xxx]大ヒント生成 done...")
+
+    except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
         return
     time.sleep(1)
 
     await channel.send(f"じゃあ始めるぜ\n----------------------------------\n")
+    # await channel.send(f"### 大ヒント！\n{quiz.summary}")
+
+    if quiz.exist_hint_image:
+        for i in range(len(quiz.images)):
+            txt, path_to_file = quiz.get_image()
+            if path_to_file == "":
+                await channel.send(f"{txt}")
+            else:
+                await channel.send(f"{txt}", file=discord.File(path_to_file))
 
     for i in range(quiz.NUM_MAX_HINT):
         if i == quiz.NUM_MAX_HINT // 4:
             # len(quiz.title) x 〇 の文字列を表示する
             await channel.send(f"ヒント：{quiz.get_masked_title('')}")
         if i == quiz.NUM_MAX_HINT * 1 // 2:
-            part_title = quiz.get_part_of_title(0.2)
+            part_title = quiz.get_part_of_title(0.25)
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        if i == quiz.NUM_MAX_HINT * 1 // 4:
+            # await channel.send(f"カテゴリヒント：{quiz.get_category()}")
+            if quiz.exist_hint_image:
+                txt, path_to_file = quiz.get_image()
+                if path_to_file == "":
+                    await channel.send(f"{txt}")
+                else:
+                    await channel.send(f"{txt}", file=discord.File(path_to_file))
         if i == quiz.NUM_MAX_HINT * 3 // 4:
             part_title = quiz.get_part_of_title(0.5)
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
@@ -167,11 +213,9 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         if quiz.already_answered:
             break
         time.sleep(0.1)
-    if not quiz.already_answered:
-        await channel.send(f"----------------------------------\n")
 
     if not quiz.already_answered:
-        part_title = quiz.get_part_of_title(0.7)
+        part_title = quiz.get_part_of_title(0.75)
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
     for i in range(50):
@@ -179,17 +223,18 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
             break
         time.sleep(0.1)
     if not quiz.already_answered:
-        await channel.send(f"### 大ヒント！(X: 答え, Y: 読み仮名やアルファベット, Z: 答えに含まれる文字）\n{quiz.summary}")
+        await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
     for i in range(100):
         if quiz.already_answered:
             break
         time.sleep(0.1)
 
-    if quiz.already_answered:
-        await channel.send("おめでとう！正解だ！")
-    else:
-        await channel.send(f"----------------------------------\n残念 時間切れだ...")
+    if not quiz.force_answer:
+        if quiz.already_answered:
+            await channel.send("おめでとう！正解だ！")
+        else:
+            await channel.send(f"----------------------------------\n残念 時間切れだ...")
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
 # logger.info(config['token'])

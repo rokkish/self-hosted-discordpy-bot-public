@@ -24,6 +24,8 @@ mecab = "^0.996.3"
 wikipedia = "^1.4.0"
 pydantic = "^2.6.2"
 python-levenshtein = "^0.25.0"
+svglib = "^1.5.1"
+cairosvg = "^2.7.1"
 
 
 [build-system]
