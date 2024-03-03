@@ -125,10 +125,15 @@ async def quit_quiz(interaction: discord.Interaction) -> None:
     except NameError:
         await interaction.response.send_message(f"強制終了するクイズはないぞ！")
 
-def progress_bar(msg: str, cursor: int, total: int) -> str:
-    x = "x" * cursor
-    dot = "." * (total - cursor)
-    return f"[{x}{dot}] {msg}"
+class ProgressBar(object):
+    def __init__(self, total: int) -> None:
+        self.total = total
+        self.cursor = 0
+    def print(self, msg: str) -> str:
+        x = "x" * self.cursor
+        dot = "." * (self.total - self.cursor)
+        self.cursor += 1
+        return f"[{x}{dot}] {msg}"
 
 import time
 def wait(seconds: int) -> None:
@@ -160,33 +165,28 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
 
     channel = client.get_channel(interaction.channel_id)
 
-    progress_bar_total = 5
-    progress_bar_cursor = 1
+    p_bar = ProgressBar(total=5)
     msg = f"ジャンルは{genre.name}だな！"
-    await interaction.response.send_message(f"{progress_bar(msg, progress_bar_cursor, progress_bar_total)}")
+    await interaction.response.send_message(f"{p_bar.print(msg)}")
 
     try:
         quiz = Quiz(NUM_MAX_HINT=20)
         # quiz.setup_quiz(theme)
         theme = quiz.pick_theme_from_genre(genre.value)
-        progress_bar_cursor += 1
-        await channel.send(f"{progress_bar('テーマ選定 done...', progress_bar_cursor, progress_bar_total)}")
+        await channel.send(f"{p_bar.print('テーマ選定 done...')}")
 
         quiz.title = quiz.get_title(theme)
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
-        progress_bar_cursor += 1
-        await channel.send(f"{progress_bar('タイトル選定 done...', progress_bar_cursor, progress_bar_total)}")
+        await channel.send(f"{p_bar.print('タイトル選定 done...')}")
 
         quiz.input_txt = quiz.get_txt(quiz.title)
         quiz.categories = quiz.get_categories(quiz.title)
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
-        progress_bar_cursor += 1
-        await channel.send(f"{progress_bar('ヒント生成 done...', progress_bar_cursor, progress_bar_total)}")
+        await channel.send(f"{p_bar.print('ヒント生成 done...')}")
 
         quiz.summary = quiz.get_summary(quiz.title)
         quiz.images = quiz.get_images(quiz.title)
-        progress_bar_cursor += 1
-        await channel.send(f"{progress_bar('大ヒント生成 done...', progress_bar_cursor, progress_bar_total)}")
+        await channel.send(f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
@@ -257,22 +257,25 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         return
 
     channel = client.get_channel(interaction.channel_id)
-
-    await interaction.response.send_message(f"[...]テーマは{theme}だな！")
+    p_bar = ProgressBar(total=4)
+    msg = f"テーマは{theme}だな！"
+    await interaction.response.send_message(f"{p_bar.print(msg)}")
 
     try:
         quiz = Quiz(NUM_MAX_HINT=20)
         # quiz.setup_quiz(theme)
         quiz.title = quiz.get_title(theme)
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
-        await channel.send(f"[x..]タイトル選定 done...")
+        await channel.send(f"{p_bar.print('タイトル選定 done...')}")
+
         quiz.input_txt = quiz.get_txt(quiz.title)
         quiz.categories = quiz.get_categories(quiz.title)
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
-        await channel.send(f"[xx.]ヒント生成 done...")
+        await channel.send(f"{p_bar.print('ヒント生成 done...')}")
+
         quiz.summary = quiz.get_summary(quiz.title)
         quiz.images = quiz.get_images(quiz.title)
-        await channel.send(f"[xxx]大ヒント生成 done...")
+        await channel.send(f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
