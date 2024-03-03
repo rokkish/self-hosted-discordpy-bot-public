@@ -131,7 +131,7 @@ class ProgressBar(object):
         self.cursor = 0
     def print(self, msg: str) -> str:
         x = "x" * self.cursor
-        dot = "." * (self.total - self.cursor)
+        dot = "-" * (self.total - self.cursor)
         self.cursor += 1
         return f"[{x}{dot}] {msg}"
 
