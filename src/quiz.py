@@ -213,6 +213,7 @@ class Quiz():
                 "Ambox_",
                 "Decrease",
                 "Increase",
+                "Flag_of",
             ]
             images = [i for i in images if not any(bl in i for bl in black_list)]
             return images
