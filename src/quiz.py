@@ -105,7 +105,7 @@ class Quiz():
         title_candidates = wikipedia.search(search_theme, results=self.NUM_SEARCH)
         logger.info("wikipedia Searched...")
         # cut title if blacklist char
-        black_list = ["一覧", "リスト"]
+        black_list = ["一覧", "リスト", "国道"]
         title_candidates = [x for x in title_candidates if not any(bl in x for bl in black_list)]
         # cut endwith blacklist
         black_list_ends = ["市", "町", "村", "区", "国", "地方", "地域", "地区", "地"]
