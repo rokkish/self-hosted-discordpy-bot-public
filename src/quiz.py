@@ -17,6 +17,9 @@ formatter = logging.Formatter(
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
+# Filter urillib3.connectionpool log from logger
+logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+
 
 # wikipedia の title を当てるゲームを管理するクラス
 class Quiz():
