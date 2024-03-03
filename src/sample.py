@@ -14,7 +14,7 @@ from data.counter_kawaki import CounterKawaki
 from db import session_scope
 from data.meme import meme_dict, meme_dict_txt, meme_dict_txt_endswith
 
-logger = logging.getLogger("sample")
+logger = logging.getLogger("morgana")
 logger.setLevel(logging.DEBUG)
 
 config = dotenv_values(".env")

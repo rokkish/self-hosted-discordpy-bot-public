@@ -7,16 +7,8 @@ import logging
 from typing import Tuple
 from quiz_genre import QuizGenresChoices
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-# set color format
-formatter = logging.Formatter(
-    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-# set stream handler
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(stream_handler)
+logger = logging.getLogger("morgana").getChild("quiz")
+logger.setLevel(logging.DEBUG)
 # Filter urillib3.connectionpool log from logger
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
