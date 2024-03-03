@@ -168,25 +168,26 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
     p_bar = ProgressBar(total=4)
     msg = f"ジャンルは{genre.name}だな！"
     await interaction.response.send_message(f"{p_bar.print(msg)}")
+    send_msg = await interaction.original_response()
 
     try:
         quiz = Quiz(NUM_MAX_HINT=20)
         # quiz.setup_quiz(theme)
         theme = quiz.pick_theme_from_genre(genre.value)
-        await channel.send(f"{p_bar.print('テーマ選定 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('テーマ選定 done...')}")
 
         quiz.title = quiz.get_title(theme)
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
-        await channel.send(f"{p_bar.print('タイトル選定 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('タイトル選定 done...')}")
 
         quiz.input_txt = quiz.get_txt(quiz.title)
         quiz.categories = quiz.get_categories(quiz.title)
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
-        await channel.send(f"{p_bar.print('ヒント生成 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")
 
         quiz.summary = quiz.get_summary(quiz.title)
         quiz.images = quiz.get_images(quiz.title)
-        await channel.send(f"{p_bar.print('大ヒント生成 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
@@ -260,22 +261,23 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     p_bar = ProgressBar(total=4)
     msg = f"テーマは{theme}だな！"
     await interaction.response.send_message(f"{p_bar.print(msg)}")
+    send_msg = await interaction.original_response()
 
     try:
         quiz = Quiz(NUM_MAX_HINT=20)
         # quiz.setup_quiz(theme)
         quiz.title = quiz.get_title(theme)
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
-        await channel.send(f"{p_bar.print('タイトル選定 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('タイトル選定 done...')}")
 
         quiz.input_txt = quiz.get_txt(quiz.title)
         quiz.categories = quiz.get_categories(quiz.title)
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
-        await channel.send(f"{p_bar.print('ヒント生成 done...')}")
+        await send_msg.edit(f"{p_bar.print('ヒント生成 done...')}")
 
         quiz.summary = quiz.get_summary(quiz.title)
         quiz.images = quiz.get_images(quiz.title)
-        await channel.send(f"{p_bar.print('大ヒント生成 done...')}")
+        await send_msg.edit(f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
