@@ -134,17 +134,14 @@ class Quiz():
         replaced_title = "〇"*len(title)
         summary = self.__remove_space(summary)
         summary = summary.replace("『", "").replace("』", "")
-        summary = re.sub(f"{title}"+r"（.*?）", replaced_title, summary)
-        summary = re.sub(f"{title}"+r"\(.*?\)", replaced_title, summary)
-        summary = re.sub(f"{title}", replaced_title, summary)
-        # # title を１文字に分解して、summary から削除
-        # try:
-        #     for char in set(title):
-        #         logging.debug(f"char: {char}")
-        #         summary = re.sub(char, "Z", summary)
-        # except Exception as e:
-        #     logging.error(e)
-        # finally:
+        sub_txt = [
+            f"{title}"+r"（.*?）",
+            f"{title}"+r"\(.*?\)",
+            f"{title}",
+        ]
+        sub_txt.extend(self.title_near)
+        for sub in sub_txt:
+            summary = re.sub(sub, replaced_title, summary)
         return summary
 
     def is_correct(self, answer: str) -> bool:
