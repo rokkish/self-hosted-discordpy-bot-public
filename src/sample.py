@@ -130,6 +130,17 @@ def progress_bar(msg: str, cursor: int, total: int) -> str:
     dot = "." * (total - cursor)
     return f"[{x}{dot}] {msg}"
 
+import time
+def wait(seconds: int) -> None:
+    global quiz
+    sleep_time = 0.1
+    loop_num = int(seconds / sleep_time)
+    for _ in range(loop_num):
+        if quiz.already_answered:
+            break
+        time.sleep(sleep_time)
+    return
+
 from quiz_genre import QuizGenresChoices
 @client.tree.command(
     name="quiz_genre",
@@ -141,7 +152,6 @@ from quiz_genre import QuizGenresChoices
 async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenresChoices) -> None:
     """クイズを出題する関数"""
     from quiz import Quiz
-    import time
     global quiz
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
@@ -213,26 +223,16 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
             await channel.send(f"{msg}")
             continue
 
-    for i in range(50):
-        if quiz.already_answered:
-            break
-        time.sleep(0.1)
+    wait(5)
     if not quiz.already_answered:
         await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
-    for i in range(50):
-        if quiz.already_answered:
-            break
-        time.sleep(0.1)
+    wait(5)
     if not quiz.already_answered:
         part_title = quiz.get_part_of_title(0.75)
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
-    for i in range(100):
-        if quiz.already_answered:
-            break
-        time.sleep(0.1)
-
+    wait(10)
     if not quiz.force_answer:
         if quiz.already_answered:
             await channel.send("おめでとう！正解だ！")
@@ -311,27 +311,16 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
             await channel.send(f"{msg}")
             continue
 
-    for i in range(50):
-        if quiz.already_answered:
-            break
-        time.sleep(0.1)
-
+    wait(5)
     if not quiz.already_answered:
         part_title = quiz.get_part_of_title(0.75)
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
-    for i in range(50):
-        if quiz.already_answered:
-            break
-        time.sleep(0.1)
+    wait(5)
     if not quiz.already_answered:
         await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
-    for i in range(100):
-        if quiz.already_answered:
-            break
-        time.sleep(0.1)
-
+    wait(10)
     if not quiz.force_answer:
         if quiz.already_answered:
             await channel.send("おめでとう！正解だ！")
