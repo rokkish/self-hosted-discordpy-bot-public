@@ -273,11 +273,11 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         quiz.input_txt = quiz.get_txt(quiz.title)
         quiz.categories = quiz.get_categories(quiz.title)
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
-        await send_msg.edit(f"{p_bar.print('ヒント生成 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")
 
         quiz.summary = quiz.get_summary(quiz.title)
         quiz.images = quiz.get_images(quiz.title)
-        await send_msg.edit(f"{p_bar.print('大ヒント生成 done...')}")
+        await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
