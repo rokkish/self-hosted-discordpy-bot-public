@@ -215,12 +215,10 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         time.sleep(1)
         msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
         if quiz.exist_hint("LOW"):
-            msg += quiz.get_hint("LOW")
-            await channel.send(f"{msg}")
+            await channel.send(f"{msg}{quiz.get_hint('LOW')}")
             continue
         if quiz.exist_hint("HIGH"):
-            msg += quiz.get_hint("HIGH")
-            await channel.send(f"{msg}")
+            await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
             continue
 
     wait(5)
@@ -303,12 +301,10 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         time.sleep(1)
         msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
         if quiz.exist_hint("LOW"):
-            msg += quiz.get_hint("LOW")
-            await channel.send(f"{msg}")
+            await channel.send(f"{msg}{quiz.get_hint('LOW')}")
             continue
         if quiz.exist_hint("HIGH"):
-            msg += quiz.get_hint("HIGH")
-            await channel.send(f"{msg}")
+            await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
             continue
 
     wait(5)
