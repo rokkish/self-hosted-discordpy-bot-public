@@ -193,7 +193,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         return
     time.sleep(1)
 
-    await channel.send(f"じゃあ始めるぜ\n----------------------------------\n")
+    await channel.send(f"じゃあ始めるぜ...{genre.name}\n----------------------------------\n")
 
     for i in range(quiz.NUM_MAX_HINT):
         # len(quiz.title) x 〇 の文字列を表示する
@@ -282,7 +282,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         return
     time.sleep(1)
 
-    await channel.send(f"じゃあ始めるぜ\n----------------------------------\n")
+    await channel.send(f"じゃあ始めるぜ...{theme}\n----------------------------------\n")
 
     for i in range(quiz.NUM_MAX_HINT):
         if i == quiz.NUM_MAX_HINT // 4:
