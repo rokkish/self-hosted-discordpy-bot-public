@@ -5,10 +5,10 @@ import collections
 import wikipedia
 import logging
 from typing import Tuple
-
+from quiz_genre import QuizGenresChoices
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 # set color format
 formatter = logging.Formatter(
     "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -20,7 +20,7 @@ logger.addHandler(stream_handler)
 
 # wikipedia の title を当てるゲームを管理するクラス
 class Quiz():
-    def __init__(self, /, NUM_MAX_HINT=30):
+    def __init__(self, /, NUM_MAX_HINT=30, genre: str = QuizGenresChoices.ノンジャンル.name):
         super().__init__()
         self.search_themes = [
             "onepiece",
@@ -40,6 +40,7 @@ class Quiz():
             "映画",
             "音楽",
         ]
+        self.genre = QuizGenresChoices.ノンジャンル
         self.title = ""
         self.title_near: list[str] = []
         self.summary = ""
@@ -50,10 +51,14 @@ class Quiz():
         self.maintanance = False
         self.MIN_HINT_WORD_LEN = 2
         self.NUM_MAX_HINT = NUM_MAX_HINT
-        self.NUM_SEARCH = 20
+        self.NUM_SEARCH = 100
         self.NUM_HIGH_HINT = 5
         self.already_answered = False
         self.force_answer = False  # 強制的に回答を表示したかどうか 
+
+    def pick_theme_from_genre(self, genre: str) -> str:
+        from quiz_genre import QuizGenres
+        return random.choice(QuizGenres.themes[genre])
 
     def get_themes(self) -> list:
         return self.search_themes
@@ -96,7 +101,15 @@ class Quiz():
         # q. prompt:Wikipedia の title をランダムに設定する関数を定義したい
         wikipedia.set_lang("ja")
         title_candidates = wikipedia.search(search_theme, results=self.NUM_SEARCH)
-        logger.debug("wikipedia Searched...")
+        logger.info("wikipedia Searched...")
+        # cut title if blacklist char
+        black_list = ["一覧", "リスト"]
+        title_candidates = [x for x in title_candidates if not any(bl in x for bl in black_list)]
+        # cut endwith blacklist
+        black_list_ends = ["市", "町", "村", "県", "区", "府", "都", "国", "地方", "地域", "地区", "地"]
+        title_candidates = [x for x in title_candidates if not x.endswith(tuple(black_list_ends))]
+        # cut n 月 m 日
+        title_candidates = [x for x in title_candidates if not re.match(r"\d+月\d+日", x)]
         # cut candidates lengh of str over 10
         title_candidates = [x for x in title_candidates if len(x) < 10]
         if len(title_candidates) == 0:
@@ -106,15 +119,20 @@ class Quiz():
         if len(title_candidates) == 0:
             raise Exception("No title candidates")
 
+        logger.info(f"{title_candidates=}")
         title = random.choice(title_candidates)
         return title
 
     def get_summary(self, title: str) -> str:
         summary = wikipedia.summary(title)
-        logger.debug("wikipedia Got summary...")
+        logger.info("wikipedia Got summary...")
         # summary から title とカッコ内の文字列(読み仮名、英語表記）を削除
+        title = title.lower()
+        summary = summary.lower()
         replaced_title = "〇"*len(title)
         summary = self.__remove_space(summary)
+        if self.genre == QuizGenresChoices.映画:
+            summary =  re.compile('『』').sub("", summary)
         summary = re.sub(f"{title}"+r"（.*?）", replaced_title, summary)
         summary = re.sub(f"{title}"+r"\(.*?\)", replaced_title, summary)
         summary = re.sub(f"{title}", replaced_title, summary)
@@ -180,7 +198,7 @@ class Quiz():
         wikipedia.set_lang("ja")
         try:
             txt = wikipedia.page(title).content
-            logger.debug("wikipedia Got page")
+            logger.info("wikipedia Got page")
             return txt
         except wikipedia.exceptions.DisambiguationError as e:
             return e
@@ -193,8 +211,16 @@ class Quiz():
         wikipedia.set_lang("ja")
         try:
             images = wikipedia.page(title).images
-            # drop UI_icon_edit
-            images = [i for i in images if not "UI_icon_edit" in i]
+            # drop black_list url
+            black_list = [
+                "Commons-logo",
+                "UI_icon",
+                "Wiki_letter_w",
+                "Folder_Hexagonal",
+                "Decrease",
+                "Increase",
+            ]
+            images = [i for i in images if not any(bl in i for bl in black_list)]
             return images
         except wikipedia.exceptions.DisambiguationError as e:
             return []
@@ -223,7 +249,7 @@ class Quiz():
         # 4. 出現頻度を算出し、出現頻度の高い順に並べ替え
         tagger = MeCab.Tagger()
         parsed = tagger.parse(input_txt)
-        logger.debug("Mecab parsed!")
+        logger.info("Mecab parsed!")
         nouns = [line.split("\t")[0] for line in parsed.split("\n") if "名詞" in line]
         # ヒントとして無効な文字列を削除する
         nouns = [noun for noun in nouns if len(noun) > self.MIN_HINT_WORD_LEN]
@@ -269,17 +295,35 @@ class Quiz():
         from io import BytesIO
         def _load_image(url: str) -> str:
             response = requests.get(url, stream=True)
+            if response.status_code != 200:
+                return ""
             response.raw.decode_content = True
             if "jpg" in url:
-                img = Image.open(BytesIO(response.content))
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
-                    img.save(f, "JPEG")
-                    return f.name
+                try:
+                    img = Image.open(BytesIO(response.content))
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
+                        w, h = img.size
+                        # if too small image, dont return it
+                        if w < 400 or h < 400:
+                            return ""
+                        aspect = w / h
+                        new_w = 200
+                        new_h = int(new_w / aspect)
+                        img.resize((new_w, new_h))
+                        img.save(f, "JPEG")
+                        return f.name
+                except Exception as e:
+                    logger.error(e)
+                    return ""
             elif "svg" in url:
                 # svg を jpeg として保存する with cairosvg
                 import cairosvg
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as f:
-                    cairosvg.svg2png(bytestring=response.content, write_to=f.name)
+                    try:
+                        cairosvg.svg2png(bytestring=response.content, write_to=f.name)
+                    except Exception as e:
+                        logger.error(e)
+                        return ""
                     return f.name
             return ""
       

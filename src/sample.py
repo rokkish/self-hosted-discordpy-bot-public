@@ -126,6 +126,120 @@ async def quit_quiz(interaction: discord.Interaction) -> None:
     except NameError:
         await interaction.response.send_message(f"強制終了するクイズはないぞ！")
 
+def progress_bar(msg: str, cursor: int, total: int) -> str:
+    x = "x" * cursor
+    dot = "." * (total - cursor)
+    return f"[{x}{dot}] {msg}"
+
+from quiz_genre import QuizGenresChoices
+@client.tree.command(
+    name="quiz_genre",
+    description="連想されるキーワードを当ててくれ!",
+)
+@app_commands.describe(
+    genre="ジャンルを選んでくれ！",
+)
+async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenresChoices) -> None:
+    """クイズを出題する関数"""
+    from quiz import Quiz
+    import time
+    global quiz
+
+    if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
+        await interaction.response.send_message(f"このチャンネルでは無効だ！")
+        return
+
+    channel = client.get_channel(interaction.channel_id)
+
+    progress_bar_total = 5
+    progress_bar_cursor = 1
+    msg = f"ジャンルは{genre.name}だな！"
+    await interaction.response.send_message(f"{progress_bar(msg, progress_bar_cursor, progress_bar_total)}")
+
+    try:
+        quiz = Quiz(NUM_MAX_HINT=20)
+        # quiz.setup_quiz(theme)
+        theme = quiz.pick_theme_from_genre(genre.value)
+        progress_bar_cursor += 1
+        await channel.send(f"{progress_bar('テーマ選定 done...', progress_bar_cursor, progress_bar_total)}")
+        quiz.title = quiz.get_title(theme)
+        quiz.title_near = quiz.get_title_near(theme, quiz.title)
+        progress_bar_cursor += 1
+        await channel.send(f"{progress_bar('タイトル選定 done...', progress_bar_cursor, progress_bar_total)}")
+        quiz.input_txt = quiz.get_txt(quiz.title)
+        quiz.categories = quiz.get_categories(quiz.title)
+        quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
+        progress_bar_cursor += 1
+        await channel.send(f"{progress_bar('ヒント生成 done...', progress_bar_cursor, progress_bar_total)}")
+        quiz.summary = quiz.get_summary(quiz.title)
+        quiz.images = quiz.get_images(quiz.title)
+        progress_bar_cursor += 1
+        await channel.send(f"{progress_bar('大ヒント生成 done...', progress_bar_cursor, progress_bar_total)}")
+
+    except BaseException as e:
+        await channel.send(f"エラーが発生したぞ！\n{e}")
+        return
+    time.sleep(1)
+
+    await channel.send(f"じゃあ始めるぜ\n----------------------------------\n")
+
+    for i in range(quiz.NUM_MAX_HINT):
+        if i == quiz.NUM_MAX_HINT // 4:
+            # len(quiz.title) x 〇 の文字列を表示する
+            await channel.send(f"ヒント：{quiz.get_masked_title('')}")
+        if i == quiz.NUM_MAX_HINT * 1 // 2:
+            part_title = quiz.get_part_of_title(0.25)
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        if i == quiz.NUM_MAX_HINT * 1 // 4:
+            # await channel.send(f"カテゴリヒント：{quiz.get_category()}")
+            if quiz.exist_hint_image:
+                txt, path_to_file = quiz.get_image()
+                if path_to_file != "":
+                    await channel.send(f"{txt}", file=discord.File(path_to_file))
+        if i == quiz.NUM_MAX_HINT * 3 // 4:
+            part_title = quiz.get_part_of_title(0.5)
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        if quiz.already_answered:
+            break
+        time.sleep(1)
+        msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
+        if quiz.exist_hint("LOW"):
+            msg += quiz.get_hint("LOW")
+            await channel.send(f"{msg}")
+            continue
+        if quiz.exist_hint("HIGH"):
+            msg += quiz.get_hint("HIGH")
+            await channel.send(f"{msg}")
+            continue
+
+    for i in range(50):
+        if quiz.already_answered:
+            break
+        time.sleep(0.1)
+
+    if not quiz.already_answered:
+        part_title = quiz.get_part_of_title(0.75)
+        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+
+    for i in range(50):
+        if quiz.already_answered:
+            break
+        time.sleep(0.1)
+    if not quiz.already_answered:
+        await channel.send(f"### 大ヒント！\n{quiz.summary}")
+
+    for i in range(100):
+        if quiz.already_answered:
+            break
+        time.sleep(0.1)
+
+    if not quiz.force_answer:
+        if quiz.already_answered:
+            await channel.send("おめでとう！正解だ！")
+        else:
+            await channel.send(f"----------------------------------\n残念 時間切れだ...")
+    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
+
 
 @client.tree.command(
     name="quiz",
@@ -149,7 +263,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     await interaction.response.send_message(f"[...]テーマは{theme}だな！")
 
     try:
-        quiz = Quiz(NUM_MAX_HINT=30)
+        quiz = Quiz(NUM_MAX_HINT=20)
         # quiz.setup_quiz(theme)
         quiz.title = quiz.get_title(theme)
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
@@ -168,15 +282,6 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     time.sleep(1)
 
     await channel.send(f"じゃあ始めるぜ\n----------------------------------\n")
-    # await channel.send(f"### 大ヒント！\n{quiz.summary}")
-
-    if quiz.exist_hint_image:
-        for i in range(len(quiz.images)):
-            txt, path_to_file = quiz.get_image()
-            if path_to_file == "":
-                await channel.send(f"{txt}")
-            else:
-                await channel.send(f"{txt}", file=discord.File(path_to_file))
 
     for i in range(quiz.NUM_MAX_HINT):
         if i == quiz.NUM_MAX_HINT // 4:
@@ -185,13 +290,10 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         if i == quiz.NUM_MAX_HINT * 1 // 2:
             part_title = quiz.get_part_of_title(0.25)
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if i == quiz.NUM_MAX_HINT * 1 // 4:
-            # await channel.send(f"カテゴリヒント：{quiz.get_category()}")
+        if i == quiz.NUM_MAX_HINT * 1 // 2:
             if quiz.exist_hint_image:
                 txt, path_to_file = quiz.get_image()
-                if path_to_file == "":
-                    await channel.send(f"{txt}")
-                else:
+                if path_to_file != "":
                     await channel.send(f"{txt}", file=discord.File(path_to_file))
         if i == quiz.NUM_MAX_HINT * 3 // 4:
             part_title = quiz.get_part_of_title(0.5)
