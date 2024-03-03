@@ -302,7 +302,7 @@ class Quiz():
                     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as f:
                         w, h = img.size
                         # if too small image, dont return it
-                        if w < 400 or h < 400:
+                        if w < 100 or h < 100:
                             return ""
                         aspect = w / h
                         new_w = 200
