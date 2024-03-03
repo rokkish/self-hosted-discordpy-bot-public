@@ -165,7 +165,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
 
     channel = client.get_channel(interaction.channel_id)
 
-    p_bar = ProgressBar(total=5)
+    p_bar = ProgressBar(total=4)
     msg = f"ジャンルは{genre.name}だな！"
     await interaction.response.send_message(f"{p_bar.print(msg)}")
 
