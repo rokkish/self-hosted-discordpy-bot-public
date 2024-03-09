@@ -38,6 +38,7 @@ class Quiz():
         self.genre = QuizGenresChoices.ノンジャンル
         self.genres_not_search = [QuizGenresChoices.都道府県.value, QuizGenresChoices.化学_理系学問.value, QuizGenresChoices.スポーツ.value]
         self.genres_not_open_hint = [QuizGenresChoices.都道府県.value]
+        self.given_theme = ""
         self.title = ""
         self.title_near: list[str] = []
         self.summary = ""
@@ -61,6 +62,7 @@ class Quiz():
         return self.search_themes
 
     def setup_quiz(self, search_theme: str):
+        self.given_theme = search_theme
         self.title = self.get_title(search_theme)
         self.title_near = self.get_title_near(search_theme, self.title)
         self.summary = self.get_summary(self.title)
@@ -95,6 +97,7 @@ class Quiz():
 
     def get_title(self, search_theme: str) -> str:
         """title を設定する関数"""
+        self.given_theme = search_theme
         # q. prompt:Wikipedia の title をランダムに設定する関数を定義したい
         wikipedia.set_lang("ja")
         title_candidates = wikipedia.search(search_theme, results=self.NUM_SEARCH)
