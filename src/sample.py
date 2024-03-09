@@ -269,7 +269,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         return
 
     channel = client.get_channel(interaction.channel_id)
-    p_bar = ProgressBar(total=4)
+    p_bar = ProgressBar(total=3)
     msg = f"テーマは{theme}だな！"
     await interaction.response.send_message(f"{p_bar.print(msg)}")
     send_msg = await interaction.original_response()
