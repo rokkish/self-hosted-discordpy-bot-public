@@ -239,11 +239,6 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
     wait(10)
-    if not quiz.force_answer:
-        if quiz.already_answered:
-            await channel.send("おめでとう！正解だ！")
-        else:
-            await channel.send(f"----------------------------------\n残念 時間切れだ...")
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
 
@@ -334,11 +329,6 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
     wait(10)
-    if not quiz.force_answer:
-        if quiz.already_answered:
-            await channel.send("おめでとう！正解だ！")
-        else:
-            await channel.send(f"----------------------------------\n残念 時間切れだ...")
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
     # clear cache until next quiz
