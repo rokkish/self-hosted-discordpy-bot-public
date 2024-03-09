@@ -5,6 +5,7 @@ import logging
 import logging.config
 import random
 import yaml
+import asyncio
 
 import discord
 from discord import app_commands
@@ -141,14 +142,14 @@ class ProgressBar(object):
         return f"[{x}{dot}] {msg}"
 
 import time
-def wait(seconds: int) -> None:
+async def wait(seconds: int) -> None:
     global quiz
     sleep_time = 0.1
     loop_num = int(seconds / sleep_time)
     for _ in range(loop_num):
         if quiz.already_answered:
             break
-        time.sleep(sleep_time)
+        await asyncio.sleep(sleep_time)
     return
 
 from quiz_genre import QuizGenresChoices
@@ -204,7 +205,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
         return
-    time.sleep(1)
+    await asyncio.sleep(1)
 
     await channel.send(f"じゃあ始めるぜ...{genre.name}\n----------------------------------\n")
 
@@ -225,7 +226,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
                     await channel.send(f"{txt}", file=discord.File(path_to_file))
         if quiz.already_answered:
             break
-        time.sleep(1)
+        await asyncio.sleep(1)
         msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
         if quiz.exist_hint("LOW"):
             await channel.send(f"{msg}{quiz.get_hint('LOW')}")
@@ -234,16 +235,16 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
             await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
             continue
 
-    wait(5)
+    await wait(5)
     if not quiz.already_answered:
         await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
-    wait(5)
+    await wait(5)
     if not quiz.already_answered:
         part_title = quiz.get_part_of_title(0.75)
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
-    wait(10)
+    await wait(10)
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
 
@@ -295,7 +296,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
         return
-    time.sleep(1)
+    await asyncio.sleep(1)
 
     await channel.send(f"じゃあ始めるぜ...{theme}\n----------------------------------\n")
 
@@ -316,7 +317,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
         if quiz.already_answered:
             break
-        time.sleep(1)
+        await asyncio.sleep(1)
         msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
         if quiz.exist_hint("LOW"):
             await channel.send(f"{msg}{quiz.get_hint('LOW')}")
@@ -325,16 +326,16 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
             await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
             continue
 
-    wait(5)
+    await wait(5)
     if not quiz.already_answered:
         await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
-    wait(5)
+    await wait(5)
     if not quiz.already_answered:
         part_title = quiz.get_part_of_title(0.75)
         await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
 
-    wait(10)
+    await wait(10)
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
     # clear cache until next quiz
