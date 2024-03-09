@@ -20,7 +20,7 @@ from data.meme import meme_dict, meme_dict_txt, meme_dict_txt_endswith
 # load logging.yml
 with open("src/logging.yml", "r") as f:
     logging.config.dictConfig(yaml.safe_load(f))
-logger = logging.getLogger("morgana")
+logger = logging.getLogger("morgana").getChild(__name__)
 
 config = dotenv_values(".env")
 
@@ -128,6 +128,9 @@ async def quit_quiz(interaction: discord.Interaction) -> None:
         quiz.already_answered = True
         quiz.force_answer = True
         await interaction.response.send_message(f"クイズを強制終了したぞ！")
+    except discord.errors.NotFound as e:
+        logger.error(f"quit_quiz failed: {e}")
+        return
     except NameError:
         await interaction.response.send_message(f"強制終了するクイズはないぞ！")
 
