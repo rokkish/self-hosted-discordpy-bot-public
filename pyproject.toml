@@ -26,6 +26,7 @@ pydantic = "^2.6.3"
 python-levenshtein = "^0.25.0"
 svglib = "^1.5.1"
 cairosvg = "^2.7.1"
+pyyaml = "^6.0.1"
 
 
 [build-system]

@@ -2,7 +2,9 @@ import sys
 import enum
 import datetime
 import logging
+import logging.config
 import random
+import yaml
 
 import discord
 from discord import app_commands
@@ -15,7 +17,9 @@ from db import session_scope
 from data.meme import meme_dict, meme_dict_txt, meme_dict_txt_endswith
 
 logger = logging.getLogger("morgana")
-logger.setLevel(logging.DEBUG)
+# load logging.yml
+with open("src/logging.yml", "r") as f:
+    logging.config.dictConfig(yaml.safe_load(f))
 
 config = dotenv_values(".env")
 

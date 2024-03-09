@@ -1,0 +1,25 @@
+# set logging level
+version: 1
+disable_existing_loggers: False
+formatters:
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: simple
+    filename: ./app.log
+loggers:
+  morgana:
+    level: WARNING
+    handlers: [console, file]
+    propagate: no
+root:
+  level: WARNING
+  handlers: [console]
