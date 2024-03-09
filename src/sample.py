@@ -331,6 +331,9 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
             await channel.send(f"----------------------------------\n残念 時間切れだ...")
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
+    # clear cache until next quiz
+    del quiz
+
 if config["token"] is None:
     logger.error("token is None.")
     sys.exit(1)
