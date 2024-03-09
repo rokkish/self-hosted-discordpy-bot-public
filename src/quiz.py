@@ -107,6 +107,8 @@ class Quiz():
         title_candidates = [x for x in title_candidates if not x.endswith(tuple(black_list_ends))]
         # cut n 月 m 日
         title_candidates = [x for x in title_candidates if not re.match(r"\d+月\d+日", x)]
+        # cut n 年
+        title_candidates = [x for x in title_candidates if not re.match(r"\d+年", x)]
         # cut candidates lengh of str over 10
         title_candidates = [x for x in title_candidates if len(x) < 10]
         if len(title_candidates) == 0:
