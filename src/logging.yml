@@ -17,9 +17,9 @@ handlers:
     filename: ./app.log
 loggers:
   morgana:
-    level: WARNING
+    level: INFO
     handlers: [console, file]
     propagate: no
 root:
-  level: WARNING
+  level: INFO
   handlers: [console]
