@@ -19,24 +19,6 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 class Quiz():
     def __init__(self, /, NUM_MAX_HINT=30, genre: str = QuizGenresChoices.ノンジャンル.name):
         super().__init__()
-        self.search_themes = [
-            "onepiece",
-            "dr.stone",
-            "ハンターハンター",
-            "刃牙",
-            "龍が如く",
-            "鬼滅の刃",
-            "ワンパンマン",
-            "進撃の巨人",
-            "ジョジョの奇妙な冒険",
-            "声優",
-            "アニメ",
-            "漫画",
-            "ゲーム",
-            "アイドル",
-            "映画",
-            "音楽",
-        ]
         self.genre = QuizGenresChoices.ノンジャンル
         self.genres_not_search = [QuizGenresChoices.都道府県.value, QuizGenresChoices.化学_理系学問.value, QuizGenresChoices.スポーツ.value]
         self.genres_not_open_hint = [QuizGenresChoices.都道府県.value]
@@ -71,9 +53,6 @@ class Quiz():
     def pick_theme_from_genre(self, genre: str) -> str:
         from quiz_genre import QuizGenres
         return random.choice(QuizGenres.themes[genre])
-
-    def get_themes(self) -> list:
-        return self.search_themes
 
     def setup_quiz(self, search_theme: str):
         self.given_theme = search_theme
@@ -363,35 +342,3 @@ class Quiz():
 
     def get_answer_url(self) -> str:
         return wikipedia.page(self.title).url
-
-    def __test__scenario_solid_theme(self):
-        self.setup_quiz("onepiece")
-        # print(f"{self.title=}")
-        # print(f"{self.summary=}")
-        # print(f"{self.input_txt[:100]=}")
-        # print(f"{self.noun_dict=}")
-        # print(f"{self.is_correct(self.title)=}")
-        print(f"{self.get_hint('LOW')=}")
-        print(f"{self.get_hint('LOW')=}")
-        print(f"{self.get_hint('HIGH')=}")
-    def __test__scenario_auto_theme(self):
-        theme = random.choice(self.search_themes)
-        self.setup_quiz(theme)
-        # print(f"{self.title=}")
-        # print(f"{self.summary=}")
-        # print(f"{self.input_txt[:100]=}")
-        # print(f"{self.noun_dict=}")
-        # print(f"{self.is_correct(self.title)=}")
-        print(f"{self.get_hint('LOW')=}")
-        print(f"{self.get_hint('LOW')=}")
-        print(f"{self.get_hint('HIGH')=}")
-    def __test__scenario_input_theme(self, theme: str):
-        self.setup_quiz(theme)
-        # print(f"{self.title=}")
-        # print(f"{self.summary=}")
-        # print(f"{self.input_txt[:100]=}")
-        # print(f"{self.noun_dict=}")
-        # print(f"{self.is_correct(self.title)=}")
-        print(f"{self.get_hint('LOW')=}")
-        print(f"{self.get_hint('LOW')=}")
-        print(f"{self.get_hint('HIGH')=}")
