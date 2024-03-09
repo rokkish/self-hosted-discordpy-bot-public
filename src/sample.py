@@ -164,6 +164,11 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         await interaction.response.send_message(f"このチャンネルでは無効だ！")
         return
 
+    # use singleton pattern, global quiz object is singleton
+    if "quiz" in globals():
+        await interaction.response.send_message(f"クイズは既に進行中だ！")
+        return
+
     channel = client.get_channel(interaction.channel_id)
 
     p_bar = ProgressBar(total=4)
@@ -257,6 +262,11 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
         await interaction.response.send_message(f"このチャンネルでは無効だ！")
+        return
+
+    # use singleton pattern, global quiz object is singleton
+    if "quiz" in globals():
+        await interaction.response.send_message(f"クイズは既に進行中だ！")
         return
 
     channel = client.get_channel(interaction.channel_id)
