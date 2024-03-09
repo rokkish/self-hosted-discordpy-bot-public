@@ -52,7 +52,19 @@ class Quiz():
         self.NUM_SEARCH = 100
         self.NUM_HIGH_HINT = 5
         self.already_answered = False
-        self.force_answer = False  # 強制的に回答を表示したかどうか 
+        self.force_answer = False  # 強制的に回答を表示したかどうか
+        self.wiki_parser = None
+        self.prefix_cache_dir = ".cache/"
+
+    def init_hint(self):
+        if self.title == "":
+            logging.error("title is empty")
+            return
+        self.wiki_parser = WikiParser(self.title, self.prefix_cache_dir)
+        self.wiki_parser.set_html()
+        self.wiki_parser.feed_indexs()
+        self.wiki_parser.feed_thumbnails()
+        self.wiki_parser.update_archived_indexs()
 
     def pick_theme_from_genre(self, genre: str) -> str:
         from quiz_genre import QuizGenres
@@ -214,20 +226,13 @@ class Quiz():
         """
         wikipedia.set_lang("ja")
         try:
-            images = wikipedia.page(title).images
-            # drop black_list url
-            black_list = [
-                "Commons-logo",
-                "UI_icon",
-                "Wiki_letter_w",
-                "Folder_Hexagonal",
-                "Ambox_",
-                "Decrease",
-                "Increase",
-                "Flag_of",
-            ]
-            images = [i for i in images if not any(bl in i for bl in black_list)]
-            return images
+            url_thumbnails = self.wiki_parser.get_thumbnails()
+            if len(url_thumbnails) == 0:
+                return []
+            local_image_paths = []
+            for url in url_thumbnails:
+                local_image_paths.append(self.wiki_parser.fetch_image(url))
+            return local_image_paths
         except wikipedia.exceptions.DisambiguationError as e:
             return []
         except wikipedia.exceptions.PageError:
@@ -303,7 +308,7 @@ class Quiz():
         import tempfile
         from PIL import Image
         from io import BytesIO
-        def _load_image(url: str) -> str:
+        def _load_image_on_page(url: str) -> str:
             response = requests.get(url, stream=True)
             if response.status_code != 200:
                 return ""
@@ -341,7 +346,7 @@ class Quiz():
             return ("画像ヒントはありません", "")
         i = random.choice(self.images)
         self.images.remove(i)
-        path_to_tmp_img = _load_image(i)
+        path_to_tmp_img = i  # return local image path
         return ("画像ヒント", path_to_tmp_img)
 
     def get_category(self) -> str:
