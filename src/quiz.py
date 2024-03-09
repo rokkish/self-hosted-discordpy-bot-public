@@ -162,6 +162,12 @@ class Quiz():
         open_len = int(len(self.title) * open_rate)
         if open_len == len(self.title):
             open_len -= 1
+        # if () in title, return hint without ()
+        if "(" in self.title:
+            open_len = min(open_len, int((self.title.find("(") - 1) * open_rate))
+        if "（" in self.title:
+            open_len = min(open_len, int((self.title.find("（") - 1) * open_rate))
+
         return self.title[:open_len]
 
     # 回答がヒットした文字列は返すが、それ以外はマスクする
@@ -170,7 +176,7 @@ class Quiz():
         try:
             tmp2 = tmp
             for char in set(tmp2):
-                if char == "(" or char == ")":
+                if char in ["(", ")", " "]:
                     continue
                 if not char in answer:
                     tmp = re.sub(f"{char}", "〇", tmp)
