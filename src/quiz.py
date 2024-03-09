@@ -131,6 +131,7 @@ class Quiz():
         replaced_title = "〇"*len(title)
         summary = self.__remove_space(summary)
         summary = summary.replace("『", "").replace("』", "")
+        summary = summary.replace("「", "").replace("」", "")
         sub_txt = [
             f"{title}"+r"（.*?）",
             f"{title}"+r"\(.*?\)",
