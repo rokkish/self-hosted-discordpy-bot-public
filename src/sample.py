@@ -16,10 +16,10 @@ from data.counter_kawaki import CounterKawaki
 from db import session_scope
 from data.meme import meme_dict, meme_dict_txt, meme_dict_txt_endswith
 
-logger = logging.getLogger("morgana")
 # load logging.yml
 with open("src/logging.yml", "r") as f:
     logging.config.dictConfig(yaml.safe_load(f))
+logger = logging.getLogger("morgana")
 
 config = dotenv_values(".env")
 

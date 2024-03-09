@@ -5,10 +5,12 @@ import collections
 import wikipedia
 import logging
 from typing import Tuple
-from quiz_genre import QuizGenresChoices
 
-logger = logging.getLogger("morgana").getChild("quiz")
-logger.setLevel(logging.DEBUG)
+from quiz_genre import QuizGenresChoices
+from wiki import WikiParser
+
+logger = logging.getLogger("morgana").getChild(__name__)
+# logger.setLevel(logging.DEBUG)
 # Filter urillib3.connectionpool log from logger
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
