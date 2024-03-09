@@ -134,6 +134,7 @@ class Quiz():
         summary = summary.replace("「", "").replace("」", "")
         sub_txt = [
             f"{title}"+r"（.*?）",
+            f"{title}株式会社",
             f"{title}"+r"\(.*?\)",
             f"{title}",
         ]
