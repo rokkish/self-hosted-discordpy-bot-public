@@ -165,7 +165,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         return
 
     # use singleton pattern, global quiz object is singleton
-    if "quiz" in globals():
+    if "quiz" in globals() and not quiz.force_answer:
         await interaction.response.send_message(f"クイズは既に進行中だ！")
         return
 
@@ -265,7 +265,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         return
 
     # use singleton pattern, global quiz object is singleton
-    if "quiz" in globals():
+    if "quiz" in globals() and not quiz.force_answer:
         await interaction.response.send_message(f"クイズは既に進行中だ！")
         return
 
