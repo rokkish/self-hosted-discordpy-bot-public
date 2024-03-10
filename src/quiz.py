@@ -325,13 +325,6 @@ class Quiz():
         path_to_tmp_img = i  # return local image path
         return ("画像ヒント", path_to_tmp_img)
 
-    def get_category(self) -> str:
-        if len(self.categories) == 0:
-            return "もうカテゴリヒントはありません"
-        c = random.choice(self.categories)
-        self.categories.remove(c)
-        return c
-
     def get_answer(self) -> str:
         return self.title
 
