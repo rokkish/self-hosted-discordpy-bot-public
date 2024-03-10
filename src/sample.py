@@ -16,6 +16,7 @@ from counter import get_counter_group_id, try_increment_counter
 from data.counter_kawaki import CounterKawaki
 from db import session_scope
 from data.meme import meme_dict, meme_dict_txt, meme_dict_txt_endswith
+from quiz import Quiz
 
 # load logging.yml
 with open("src/logging.yml", "r") as f:
@@ -192,7 +193,6 @@ from quiz_genre import QuizGenresChoices
 )
 async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenresChoices) -> None:
     """クイズを出題する関数"""
-    from quiz import Quiz
     global quiz
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
@@ -265,8 +265,6 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
 )
 async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     """クイズを出題する関数"""
-    from quiz import Quiz
-    import time
     global quiz
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
