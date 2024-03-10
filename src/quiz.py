@@ -15,8 +15,8 @@ logger = logging.getLogger("morgana").getChild(__name__)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 
-# wikipedia の title を当てるゲームを管理するクラス
 class Quiz():
+    """wikipedia の title を当てるゲームを管理するクラス"""
     def __init__(self, /, NUM_MAX_HINT=30, genre: str = QuizGenresChoices.ノンジャンル.name):
         super().__init__()
         self.genre = QuizGenresChoices.ノンジャンル
@@ -150,14 +150,14 @@ class Quiz():
         title = self.title.lower()
         return ans in [title, *self.title_near]
 
-    # 回答が惜しいかどうかを判定する関数
     def is_close(self, answer: str) -> bool:
+        """回答が惜しいかどうかを判定する関数"""
         if len(answer) < 2:
             return False
         return answer in self.title
 
-    # 正解の一部をマスクするための部分文字列を返す関数
     def get_part_of_title(self, open_rate: float) -> str:
+        """正解の一部をマスクするための部分文字列を返す関数"""
         if open_rate < 0 or open_rate > 1:
             return "(error)"
         open_len = int(len(self.title) * open_rate)
@@ -171,8 +171,8 @@ class Quiz():
 
         return self.title[:open_len]
 
-    # 回答がヒットした文字列は返すが、それ以外はマスクする
     def get_masked_title(self, answer: str) -> str:
+        """回答がヒットした文字列は返すが、それ以外はマスクする"""
         tmp = self.title
         try:
             tmp2 = tmp
@@ -254,8 +254,8 @@ class Quiz():
         noun_dict["LOW"] = [noun for noun, _ in nouns_list[self.NUM_HIGH_HINT:]]
         return noun_dict
 
-    # 残りのヒント数
     def remain_hint(self, strength: str) -> int:
+        """残りのヒント数"""
         return len(self.noun_dict[strength])
     def all_remain_hint(self) -> str:
         return f"HIGH: {len(self.noun_dict['HIGH'])}\nLOW: {len(self.noun_dict['LOW'])}\n"

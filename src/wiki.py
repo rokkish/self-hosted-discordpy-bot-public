@@ -10,8 +10,8 @@ from typing import Optional
 
 logger = logging.getLogger("morgana").getChild(__name__)
 
-# wikipedia page の html から情報を抽出する parser クラス
 class WikiParser:
+    """wikipedia page の html から情報を抽出する parser クラス"""
     def __init__(self, page_name: str = None, prefix_html_file: str = "html/"):
         self.page = None
         self.page_name = page_name
