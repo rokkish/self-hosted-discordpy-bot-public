@@ -68,7 +68,7 @@ class WikiParser:
                     return await response.read()
         response = await fetch(f"https:{url}")
         try:
-            img = Image.open(BytesIO(response.content))
+            img = Image.open(BytesIO(response))
         except BaseException as e:
             logger.error(f"Error: {e}")
             return None
