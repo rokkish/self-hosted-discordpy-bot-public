@@ -61,7 +61,7 @@ class Quiz():
         self.title_near = self.get_title_near(search_theme, self.title)
         self.summary = self.get_summary(self.title)
         self.input_txt = self.get_txt()
-        self.categories = self.get_categories(self.title)
+        self.categories = self.get_categories()
         self.noun_dict = self.get_topk_noun(self.input_txt)
 
     def get_title_near(self, search_theme: str, title: str) -> list:
