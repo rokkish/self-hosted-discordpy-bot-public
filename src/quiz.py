@@ -208,16 +208,22 @@ class Quiz():
         return local_image_paths
 
     def get_categories(self, title: str) -> list:
-        """title から Wikipedia の記事のカテゴリを取得する関数
+        """title から Wikipedia の記事の目次を取得する関数
         """
-        wikipedia.set_lang("ja")
-        try:
-            categories = wikipedia.page(title).categories
-            return categories
-        except wikipedia.exceptions.DisambiguationError as e:
-            return []
-        except wikipedia.exceptions.PageError:
-            return []
+        categories = self.wiki_parser.get_index()
+        # remove blacklist item from categories
+        black_list = ["概要", "脚注", "参考文献", "外部リンク", "関連項目", "出典"]
+        categories = [x for x in categories if not any(bl in x for bl in black_list)]
+        return categories
+
+    def choice_category(self) -> list[str]:
+        if len(self.categories) < 3:
+            return ["目次ヒントはありません"]
+        # choice random (no duplication) and remove it from list
+        cs = random.sample(self.categories, 3)
+        for c in cs:
+            self.categories.remove(c)
+        return cs
 
     def get_topk_noun(self, input_txt: str) -> dict:
         """出現頻度の高い名詞リストを返す関数

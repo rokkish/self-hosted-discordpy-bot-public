@@ -228,6 +228,8 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
                 txt, path_to_file = quiz.get_image()
                 if path_to_file != "":
                     await channel.send(f"{txt}", file=discord.File(path_to_file))
+            cs = quiz.choice_category()
+            await channel.send(f"目次ヒント:{cs}")
         if quiz.already_answered:
             break
         await asyncio.sleep(1)
@@ -317,6 +319,8 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
                 txt, path_to_file = quiz.get_image()
                 if path_to_file != "":
                     await channel.send(f"{txt}", file=discord.File(path_to_file))
+            cs = quiz.choice_category()
+            await channel.send(f"目次ヒント:{cs.join(',')}")
         if i == quiz.NUM_MAX_HINT * 3 // 4:
             part_title = quiz.get_part_of_title(0.5)
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
