@@ -45,6 +45,7 @@ class Quiz():
             logging.error("title is empty")
             return
         self.wiki_parser = WikiParser(self.title, self.prefix_cache_dir)
+        self.wiki_parser.set_page()
         self.wiki_parser.set_html()
         self.wiki_parser.feed_indexs()
         self.wiki_parser.feed_thumbnails()
@@ -193,37 +194,19 @@ class Quiz():
         """
         if self.input_txt != "":
             return self.input_txt
-        # q. prompt:Wikipedia の記事の文字列を取得する関数を定義したい
-        # a. 以下のように定義することで、Wikipedia の記事の文字列を取得する関数を定義できます。
-        # 1. wikipedia をインポート
-        # 2. wikipedia.page()でWikipediaの記事を取得
-        # 3. Wikipediaの記事の文字列を取得
-        wikipedia.set_lang("ja")
-        try:
-            txt = wikipedia.page(title).content
-            logger.info("wikipedia Got page")
-            return txt
-        except wikipedia.exceptions.DisambiguationError as e:
-            return e
-        except wikipedia.exceptions.PageError:
-            return ""
+        return self.wiki_parser.page.content
 
     def get_images(self, title: str) -> list:
         """title から Wikipedia の記事の画像を取得する関数
         """
-        wikipedia.set_lang("ja")
-        try:
-            url_thumbnails = self.wiki_parser.get_thumbnails()
-            if len(url_thumbnails) == 0:
-                return []
-            local_image_paths = []
-            for url in url_thumbnails:
-                local_image_paths.append(self.wiki_parser.fetch_image(url))
-            return local_image_paths
-        except wikipedia.exceptions.DisambiguationError as e:
+        url_thumbnails = self.wiki_parser.get_thumbnails()
+        if len(url_thumbnails) == 0:
             return []
-        except wikipedia.exceptions.PageError:
-            return []
+        local_image_paths = []
+        for url in url_thumbnails:
+            local_image_paths.append(self.wiki_parser.fetch_image(url))
+        return local_image_paths
+
     def get_categories(self, title: str) -> list:
         """title から Wikipedia の記事のカテゴリを取得する関数
         """

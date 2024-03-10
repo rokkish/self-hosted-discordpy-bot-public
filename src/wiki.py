@@ -21,17 +21,25 @@ class WikiParser:
         if not Path(f"{self.prefix_file}").exists():
             Path(f"{self.prefix_file}").mkdir(parents=True, exist_ok=True)
 
+    def set_page(self) -> None:
+        wikipedia.set_lang("ja")
+        try:
+            self.page = wikipedia.page(self.page_name)
+            logger.info("wikipedia Got page")
+        except wikipedia.exceptions.DisambiguationError as e:
+            logger.error(f"DisambiguationError: {e}")
+        except wikipedia.exceptions.PageError:
+            logger.error(f"PageError: {self.page_name} not found")
+
     def set_html(self, page: wikipedia.WikipediaPage = None):
         # if saved file exists, load it
         try:
             with open(f"{self.page_name}.html", "r") as f:
                 self.page_html = f.read()
         except FileNotFoundError:
-            wikipedia.set_lang("ja")
-            if page is not None:
-                self.page_html = page.html()
-            else:
-                page = wikipedia.page(self.page_name)
+            if page is None:
+                self.set_page()
+                page = self.page
             self.page_html = page.html()
             # save html
             with open(f"{self.prefix_file}{self.page_name}.html", "w") as f:
