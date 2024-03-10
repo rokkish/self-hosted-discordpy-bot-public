@@ -258,6 +258,8 @@ class Quiz():
         # nouns_uniq = [line.split("\t")[0] for line in parsed.split("\n") if "固有名詞" in line]
         # ヒントとして無効な文字列を削除する
         nouns = [noun for noun in nouns if len(noun) > self.MIN_HINT_WORD_LEN]
+        # ヒントとして情報量がない文字列を blacklist で削除する
+        nouns = [noun for noun in nouns if not noun in ["それぞれ", "その後", "こと", "もの", "とき", "ため", "ここ", "それ", "これ", "それ", "もの", "ここ", "こちら", "そちら", "あちら", "どちら", "どれ", "どこ", "だれ", "なに", "なん", "何", "何か", "何も", "何"]]
         # 記号を削除する
         nouns = [noun for noun in nouns if not noun.isascii()]
         # 数字を削除する
@@ -293,7 +295,9 @@ class Quiz():
         self.noun_dict[strength].remove(h)
         if h == self.title:
             return "(答えと同じためヒントを表示できません)"
-        if len(self.__remove_symbol(h)) == 0:
+        h_no_symbol = self.__remove_symbol(h)
+        if len(h_no_symbol) == 0:
+            logger.info(f"記号のみのためヒントを表示できません: {h_no_symbol=}")
             return "(記号のみのためヒントを表示できません)"
         return h
 
