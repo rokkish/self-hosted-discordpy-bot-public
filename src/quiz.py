@@ -124,7 +124,7 @@ class Quiz():
         return title
 
     def get_summary(self, title: str) -> str:
-        summary = wikipedia.summary(title)
+        summary = self.wiki_parser.page.summary # wikipedia.summary(title)
         logger.info("wikipedia Got summary...")
         # summary から title とカッコ内の文字列(読み仮名、英語表記）を削除
         title = title.lower()

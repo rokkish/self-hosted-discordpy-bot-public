@@ -306,6 +306,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
+        logger.error(f"BaseException: {e}")
         return
     await asyncio.sleep(1)
 
