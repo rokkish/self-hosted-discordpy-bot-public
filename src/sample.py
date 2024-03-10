@@ -218,11 +218,11 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         logger.debug(f"{theme=}")
         await send_msg.edit(content=f"{p_bar.print('テーマ選定 done...')}")
 
-        quiz.init_hint()
         quiz.title = quiz.get_title(theme)
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
         await send_msg.edit(content=f"{p_bar.print('タイトル選定 done...')}")
 
+        quiz.init_hint()
         quiz.input_txt = quiz.get_txt()
         quiz.categories = quiz.get_categories()
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
