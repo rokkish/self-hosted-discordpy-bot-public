@@ -113,6 +113,7 @@ class Quiz():
         # cut candidates lengh of str over 10
         title_candidates = [x for x in title_candidates if len(x) < 10]
         if len(title_candidates) == 0:
+            logger.info("No title candidates under 10 char")
             raise Exception("No title candidates under 10 char")
         # cut candidates that include search_theme
         title_candidates = [x for x in title_candidates if search_theme != x]
