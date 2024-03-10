@@ -196,7 +196,7 @@ class Quiz():
             return self.input_txt
         return self.wiki_parser.page.content
 
-    def get_images(self, title: str) -> list:
+    def get_images(self) -> list:
         """title から Wikipedia の記事の画像を取得する関数
         """
         url_thumbnails = self.wiki_parser.get_thumbnails()
