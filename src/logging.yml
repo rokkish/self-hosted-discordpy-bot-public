@@ -14,7 +14,7 @@ handlers:
     class: logging.FileHandler
     level: DEBUG
     formatter: simple
-    filename: ./app.log
+    filename: ./src/app.log
 loggers:
   morgana:
     level: INFO
