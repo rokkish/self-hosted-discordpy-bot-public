@@ -155,6 +155,36 @@ async def wait(seconds: int) -> None:
         await asyncio.sleep(sleep_time)
     return
 
+# hint loop
+async def hint_loop(quiz, channel):
+    for i in range(quiz.NUM_MAX_HINT):
+        if i == quiz.NUM_MAX_HINT // 4:
+            # len(quiz.title) x 〇 の文字列を表示する
+            await channel.send(f"ヒント：{quiz.get_masked_title('')}")
+        if i == quiz.NUM_MAX_HINT * 1 // 2:
+            part_title = quiz.get_part_of_title(0.25)
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        if i == quiz.NUM_MAX_HINT * 1 // 2:
+            if quiz.exist_hint_image():
+                txt, path_to_file = quiz.get_image()
+                if path_to_file != "":
+                    await channel.send(f"{txt}", file=discord.File(path_to_file))
+            cs: list[str] = quiz.choice_category()
+            await channel.send(f"目次ヒント:{cs}")
+        if i == quiz.NUM_MAX_HINT * 3 // 4:
+            part_title = quiz.get_part_of_title(0.5)
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        if quiz.already_answered:
+            break
+        await asyncio.sleep(1)
+        msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
+        if quiz.exist_hint("LOW"):
+            await channel.send(f"{msg}{quiz.get_hint('LOW')}")
+            continue
+        if quiz.exist_hint("HIGH"):
+            await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
+            continue
+
 from quiz_genre import QuizGenresChoices
 @client.tree.command(
     name="quiz_genre",
@@ -213,33 +243,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
     if not quiz.already_answered:
         await channel.send(f"じゃあ始めるぜ...{genre.name}\n----------------------------------\n")
 
-    for i in range(quiz.NUM_MAX_HINT):
-        if i == quiz.NUM_MAX_HINT // 4:
-            # len(quiz.title) x 〇 の文字列を表示する
-            await channel.send(f"ヒント：{quiz.get_masked_title('')}")
-        if i == quiz.NUM_MAX_HINT * 1 // 2:
-            part_title = quiz.get_part_of_title(0.25)
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if i == quiz.NUM_MAX_HINT * 1 // 2:
-            if quiz.exist_hint_image():
-                txt, path_to_file = quiz.get_image()
-                if path_to_file != "":
-                    await channel.send(f"{txt}", file=discord.File(path_to_file))
-            cs = quiz.choice_category()
-            await channel.send(f"目次ヒント:{cs.join(',')}")
-        if i == quiz.NUM_MAX_HINT * 3 // 4:
-            part_title = quiz.get_part_of_title(0.5)
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if quiz.already_answered:
-            break
-        await asyncio.sleep(1)
-        msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
-        if quiz.exist_hint("LOW"):
-            await channel.send(f"{msg}{quiz.get_hint('LOW')}")
-            continue
-        if quiz.exist_hint("HIGH"):
-            await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
-            continue
+    await hint_loop(quiz, channel)
 
     await wait(5)
     if not quiz.already_answered:
@@ -307,33 +311,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     if not quiz.already_answered:
         await channel.send(f"じゃあ始めるぜ...{theme}\n----------------------------------\n")
 
-    for i in range(quiz.NUM_MAX_HINT):
-        if i == quiz.NUM_MAX_HINT // 4:
-            # len(quiz.title) x 〇 の文字列を表示する
-            await channel.send(f"ヒント：{quiz.get_masked_title('')}")
-        if i == quiz.NUM_MAX_HINT * 1 // 2:
-            part_title = quiz.get_part_of_title(0.25)
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if i == quiz.NUM_MAX_HINT * 1 // 2:
-            if quiz.exist_hint_image():
-                txt, path_to_file = quiz.get_image()
-                if path_to_file != "":
-                    await channel.send(f"{txt}", file=discord.File(path_to_file))
-            cs = quiz.choice_category()
-            await channel.send(f"目次ヒント:{cs.join(',')}")
-        if i == quiz.NUM_MAX_HINT * 3 // 4:
-            part_title = quiz.get_part_of_title(0.5)
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if quiz.already_answered:
-            break
-        await asyncio.sleep(1)
-        msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
-        if quiz.exist_hint("LOW"):
-            await channel.send(f"{msg}{quiz.get_hint('LOW')}")
-            continue
-        if quiz.exist_hint("HIGH"):
-            await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
-            continue
+    await hint_loop(quiz, channel)
 
     await wait(5)
     if not quiz.already_answered:
