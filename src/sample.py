@@ -214,22 +214,22 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         await channel.send(f"じゃあ始めるぜ...{genre.name}\n----------------------------------\n")
 
     for i in range(quiz.NUM_MAX_HINT):
-        # len(quiz.title) x 〇 の文字列を表示する
         if i == quiz.NUM_MAX_HINT // 4:
+            # len(quiz.title) x 〇 の文字列を表示する
             await channel.send(f"ヒント：{quiz.get_masked_title('')}")
         if i == quiz.NUM_MAX_HINT * 1 // 2:
             part_title = quiz.get_part_of_title(0.25)
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if i == quiz.NUM_MAX_HINT * 3 // 4:
-            part_title = quiz.get_part_of_title(0.5)
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-        if i == quiz.NUM_MAX_HINT * 1 // 4:
+        if i == quiz.NUM_MAX_HINT * 1 // 2:
             if quiz.exist_hint_image():
                 txt, path_to_file = quiz.get_image()
                 if path_to_file != "":
                     await channel.send(f"{txt}", file=discord.File(path_to_file))
             cs = quiz.choice_category()
-            await channel.send(f"目次ヒント:{cs}")
+            await channel.send(f"目次ヒント:{cs.join(',')}")
+        if i == quiz.NUM_MAX_HINT * 3 // 4:
+            part_title = quiz.get_part_of_title(0.5)
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
         if quiz.already_answered:
             break
         await asyncio.sleep(1)
