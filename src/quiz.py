@@ -196,7 +196,7 @@ class Quiz():
             return self.input_txt
         return self.wiki_parser.page.content
 
-    def get_images(self) -> list:
+    async def get_images(self) -> list:
         """title から Wikipedia の記事の画像を取得する関数
         """
         url_thumbnails = self.wiki_parser.get_thumbnails()
@@ -204,7 +204,7 @@ class Quiz():
             return []
         local_image_paths = []
         for url in url_thumbnails:
-            path = self.wiki_parser.fetch_image(url)
+            path = await self.wiki_parser.fetch_image(url)
             if path is not None:
                 local_image_paths.append(path)
         return local_image_paths

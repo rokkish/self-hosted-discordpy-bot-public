@@ -232,11 +232,12 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")
 
         quiz.summary = quiz.get_summary(quiz.title)
-        quiz.images = quiz.get_images()
+        quiz.images = await quiz.get_images()
         await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
         await channel.send(f"エラーが発生したぞ！\n{e}")
+        logger.error(f"BaseException: {e}")
         return
     await asyncio.sleep(1)
 
@@ -300,7 +301,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")
 
         quiz.summary = quiz.get_summary(quiz.title)
-        quiz.images = quiz.get_images()
+        quiz.images = await quiz.get_images()
         await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:

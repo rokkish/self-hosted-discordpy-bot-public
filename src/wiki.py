@@ -1,4 +1,4 @@
-import requests
+import aiohttp
 from PIL import Image
 from io import BytesIO
 import wikipedia
@@ -60,8 +60,13 @@ class WikiParser:
             img_url = img.get()
             if type(img_url) is str:
                 self.urls_thumbnail.append(img_url)
-    def fetch_image(self, url: str) -> Optional[str]:
-        response = requests.get(f"https:{url}")
+    async def fetch_image(self, url: str) -> Optional[str]:
+        # response = requests.get(f"https:{url}")
+        async def fetch(url: str):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    return await response.read()
+        response = await fetch(f"https:{url}")
         try:
             img = Image.open(BytesIO(response.content))
         except BaseException as e:
