@@ -330,4 +330,4 @@ class Quiz():
         return self.title
 
     def get_answer_url(self) -> str:
-        return wikipedia.page(self.title).url
+        return self.wiki_parser.page.url
