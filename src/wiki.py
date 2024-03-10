@@ -12,6 +12,7 @@ logger = logging.getLogger("morgana").getChild(__name__)
 # wikipedia page の html から情報を抽出する parser クラス
 class WikiParser:
     def __init__(self, page_name: str = None, prefix_html_file: str = "html/"):
+        self.page = None
         self.page_name = page_name
         self.prefix_file = prefix_html_file
         self.page_html = None
@@ -31,16 +32,15 @@ class WikiParser:
         except wikipedia.exceptions.PageError:
             logger.error(f"PageError: {self.page_name} not found")
 
-    def set_html(self, page: wikipedia.WikipediaPage = None):
+    def set_html(self):
         # if saved file exists, load it
         try:
             with open(f"{self.page_name}.html", "r") as f:
                 self.page_html = f.read()
         except FileNotFoundError:
-            if page is None:
+            if self.page is None:
                 self.set_page()
-                page = self.page
-            self.page_html = page.html()
+            self.page_html = self.page.html()
             # save html
             with open(f"{self.prefix_file}{self.page_name}.html", "w") as f:
                 f.write(self.page_html)
