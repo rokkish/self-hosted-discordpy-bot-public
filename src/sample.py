@@ -226,7 +226,7 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         quiz.title_near = quiz.get_title_near(theme, quiz.title)
         await send_msg.edit(content=f"{p_bar.print('タイトル選定 done...')}")
 
-        quiz.input_txt = quiz.get_txt(quiz.title)
+        quiz.input_txt = quiz.get_txt()
         quiz.categories = quiz.get_categories()
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
         await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")
@@ -294,7 +294,7 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         await send_msg.edit(content=f"{p_bar.print('タイトル選定 done...')}")
 
         quiz.init_hint()
-        quiz.input_txt = quiz.get_txt(quiz.title)
+        quiz.input_txt = quiz.get_txt()
         quiz.categories = quiz.get_categories()
         quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
         await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")

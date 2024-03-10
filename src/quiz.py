@@ -60,7 +60,7 @@ class Quiz():
         self.title = self.get_title(search_theme)
         self.title_near = self.get_title_near(search_theme, self.title)
         self.summary = self.get_summary(self.title)
-        self.input_txt = self.get_txt(self.title)
+        self.input_txt = self.get_txt()
         self.categories = self.get_categories(self.title)
         self.noun_dict = self.get_topk_noun(self.input_txt)
 
@@ -189,7 +189,7 @@ class Quiz():
     def update_answered(self):
         self.already_answered = True
 
-    def get_txt(self, title: str) -> str:
+    def get_txt(self) -> str:
         """title から Wikipedia の記事の文字列を取得する関数
         """
         if self.input_txt != "":
