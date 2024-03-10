@@ -218,14 +218,13 @@ class Quiz():
         categories = [re.sub(self.title, "〇"*len(self.title), x) for x in categories]
         return categories
 
-    def choice_category(self) -> list[str]:
-        if len(self.categories) < 3:
-            return ["目次ヒントはありません"]
+    def choice_category(self) -> str:
+        if len(self.categories) < 1:
+            return "目次ヒントはありません"
         # choice random (no duplication) and remove it from list
-        cs = random.sample(self.categories, 3)
-        for c in cs:
-            self.categories.remove(c)
-        return cs
+        cs = random.sample(self.categories, 1)
+        self.categories.remove(cs[0])
+        return cs[0]
 
     def get_topk_noun(self, input_txt: str) -> dict:
         """出現頻度の高い名詞リストを返す関数
