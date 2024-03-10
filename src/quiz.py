@@ -39,6 +39,14 @@ class Quiz():
         self.force_answer = False  # 強制的に回答を表示したかどうか
         self.wiki_parser = None
         self.prefix_cache_dir = ".cache/"
+        self.user_created = False  # ユーザにより問題が作成されたかどうか
+        self.user_name_created = ""  # ユーザ名
+
+    def init_user_created(self, user_name: str) -> None:
+        self.user_created = True
+        self.user_name_created = user_name
+    def is_user_created(self) -> bool:
+        return self.user_created
 
     def init_hint(self):
         if self.title == "":
@@ -64,9 +72,13 @@ class Quiz():
         self.categories = self.get_categories()
         self.noun_dict = self.get_topk_noun(self.input_txt)
 
-    def get_title_near(self, search_theme: str, title: str) -> list:
-        no_theme = self.__remove_theme(search_theme, title)
-        no_space = self.__remove_space(no_theme)
+    def get_title_near(self, search_theme: str, title: str, theme_is_title: bool = False) -> list:
+        if theme_is_title:
+            no_theme = search_theme
+            no_space = self.__remove_space(search_theme)
+        else:
+            no_theme = self.__remove_theme(search_theme, title)
+            no_space = self.__remove_space(no_theme)
         no_symbol = self.__remove_symbol(no_space)
         return [
             no_theme,

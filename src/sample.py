@@ -111,7 +111,11 @@ async def on_message(message: discord.Message):
             if quiz.is_correct(message.content):
                 quiz.update_answered()
                 logger.debug("correct!")
-                await message.channel.send("おめでとう！正解だ！")
+                if quiz.user_name_created == message.author.name:
+                    await message.channel.send("出題者が答えてしまった...🫠")
+                else:
+                    logger.info(f"{quiz.user_name_created},{message.author.name}")
+                    await message.channel.send("おめでとう！正解だ！")
                 return
             if quiz.is_close(message.content):
                 masked_title = quiz.get_masked_title(message.content)
@@ -307,6 +311,90 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
 
     if not quiz.already_answered:
         await channel.send(f"じゃあ始めるぜ...{theme}\n----------------------------------\n")
+
+    await hint_loop(quiz, channel)
+
+    await wait(1)
+    if not quiz.already_answered:
+        category = quiz.choice_category()
+        await channel.send(f"目次ヒント:{category}")
+
+    await wait(4)
+    if not quiz.already_answered:
+        await channel.send(f"### 大ヒント！\n{quiz.summary}")
+
+    await wait(5)
+    if not quiz.already_answered:
+        part_title = quiz.get_part_of_title(0.75)
+        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+
+    await wait(10)
+    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
+
+    # clear cache until next quiz
+    del quiz
+
+@client.tree.command(
+    name="quiz_master",
+    description="出題者モードだ！"
+)
+@app_commands.describe(
+    title="好きなお題(正解)を入力してくれ！",
+)
+async def quiz_master(interaction: discord.Integration, title: str) -> None:
+    """誰かが答えを決めて、クイズを出題する関数"""
+    global quiz
+
+    if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
+        await interaction.response.send_message(f"このチャンネルでは無効だ！")
+        return
+
+    # use singleton pattern, global quiz object is singleton
+    if "quiz" in globals() and not quiz.force_answer:
+        await interaction.response.send_message(f"クイズは既に進行中だ！")
+        return
+
+    channel = client.get_channel(interaction.channel_id)
+    master_user_name = interaction.user.name
+    p_bar = ProgressBar(total=2)
+    msg = f"お題は{title}だな！"
+    await interaction.response.send_message(f"{msg}", ephemeral=True)
+    msg = f"{master_user_name}からの問題だ！"
+    send_msg = await channel.send(f"{p_bar.print(msg)}")
+    send_msg_master = await interaction.original_response()
+
+    try:
+        quiz = Quiz(NUM_MAX_HINT=20)
+        quiz.init_user_created(master_user_name)
+        # quiz.setup_quiz(theme)
+        quiz.title = title
+        quiz.title_near = quiz.get_title_near(title, quiz.title, theme_is_title=True)
+        # await send_msg.edit(content=f"{p_bar.print('タイトル選定 done...')}")
+
+        quiz.init_hint()
+        if quiz.wiki_parser.page.title != title:
+            logger.error(f"Title is not matched: {quiz.wiki_parser.page.title} != {title}")
+            await channel.send(f"別のお題を設定してくれ\nerror: 入力されたお題と設定されたお題が不一致")
+            await send_msg_master.edit(content=f"お題は{title}だな！\ninput: {title}\nanswer: {quiz.wiki_parser.page.title}")
+            del quiz
+            return
+        quiz.input_txt = quiz.get_txt()
+        quiz.categories = quiz.get_categories()
+        quiz.noun_dict = quiz.get_topk_noun(quiz.input_txt)
+        await send_msg.edit(content=f"{p_bar.print('ヒント生成 done...')}")
+
+        quiz.summary = quiz.get_summary(quiz.title)
+        quiz.images = await quiz.get_images()
+        await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
+
+    except BaseException as e:
+        await channel.send(f"エラーが発生したぞ！\n{e}")
+        logger.error(f"BaseException: {e}")
+        return
+    await asyncio.sleep(1)
+
+    if not quiz.already_answered:
+        await channel.send(f"じゃあ始めるぜ...{master_user_name}\n----------------------------------\n")
 
     await hint_loop(quiz, channel)
 
