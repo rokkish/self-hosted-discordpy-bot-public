@@ -207,13 +207,15 @@ class Quiz():
             local_image_paths.append(self.wiki_parser.fetch_image(url))
         return local_image_paths
 
-    def get_categories(self, title: str) -> list:
+    def get_categories(self) -> list:
         """title から Wikipedia の記事の目次を取得する関数
         """
         categories = self.wiki_parser.get_index()
         # remove blacklist item from categories
         black_list = ["概要", "脚注", "参考文献", "外部リンク", "関連項目", "出典"]
         categories = [x for x in categories if not any(bl in x for bl in black_list)]
+        # mask self.title in categories
+        categories = [re.sub(self.title, "〇"*len(self.title), x) for x in categories]
         return categories
 
     def choice_category(self) -> list[str]:
