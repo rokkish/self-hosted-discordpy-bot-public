@@ -100,12 +100,14 @@ class Quiz():
         black_list = ["一覧", "リスト", "国道"]
         title_candidates = [x for x in title_candidates if not any(bl in x for bl in black_list)]
         # cut endwith blacklist
-        black_list_ends = ["市", "町", "村", "区", "国", "地方", "地域", "地区", "地"]
+        black_list_ends = ["市", "町", "村", "区", "国", "地方", "地域", "地区", "地", "学校"]
         title_candidates = [x for x in title_candidates if not x.endswith(tuple(black_list_ends))]
         # cut xxのsearch_theme
         title_candidates = [x for x in title_candidates if not re.match(r".+の"+f"{search_theme}", x)] 
         # cut search_themeのyy
         title_candidates = [x for x in title_candidates if not re.match(f"{search_theme}の"+r".+", x)]
+        # cut n 月
+        title_candidates = [x for x in title_candidates if not re.match(r"\d+月", x)]
         # cut n 月 m 日
         title_candidates = [x for x in title_candidates if not re.match(r"\d+月\d+日", x)]
         # cut n 年
