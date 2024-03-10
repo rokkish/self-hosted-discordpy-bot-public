@@ -144,7 +144,6 @@ class ProgressBar(object):
         self.cursor += 1
         return f"[{x}{dot}] {msg}"
 
-import time
 async def wait(seconds: int) -> None:
     global quiz
     sleep_time = 0.1
