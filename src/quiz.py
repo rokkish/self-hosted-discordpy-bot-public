@@ -204,7 +204,9 @@ class Quiz():
             return []
         local_image_paths = []
         for url in url_thumbnails:
-            local_image_paths.append(self.wiki_parser.fetch_image(url))
+            path = self.wiki_parser.fetch_image(url)
+            if path is not None:
+                local_image_paths.append(path)
         return local_image_paths
 
     def get_categories(self) -> list:

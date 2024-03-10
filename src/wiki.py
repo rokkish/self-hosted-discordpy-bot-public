@@ -6,6 +6,7 @@ from parsel import Selector
 import json
 import logging
 from pathlib import Path
+from typing import Optional
 
 logger = logging.getLogger("morgana").getChild(__name__)
 
@@ -59,9 +60,13 @@ class WikiParser:
             img_url = img.get()
             if type(img_url) is str:
                 self.urls_thumbnail.append(img_url)
-    def fetch_image(self, url: str) -> str:
+    def fetch_image(self, url: str) -> Optional[str]:
         response = requests.get(f"https:{url}")
-        img = Image.open(BytesIO(response.content))
+        try:
+            img = Image.open(BytesIO(response.content))
+        except BaseException as e:
+            logger.error(f"Error: {e}")
+            return None
         path = f"{self.prefix_file}{self.page_name}.png"
         img.save(f"{path}")
         return path
