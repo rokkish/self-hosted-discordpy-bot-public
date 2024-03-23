@@ -160,13 +160,13 @@ async def wait(seconds: int) -> None:
     return
 
 # hint loop
-async def hint_loop(quiz, channel):
+async def hint_loop(quiz, channel, open_rates: list[float] = [0.25, 0.5]):
     for i in range(quiz.NUM_MAX_HINT):
         if i == quiz.NUM_MAX_HINT // 4:
             # len(quiz.title) x 〇 の文字列を表示する
             await channel.send(f"ヒント：{quiz.get_masked_title('')}")
         if i == quiz.NUM_MAX_HINT * 1 // 2:
-            part_title = quiz.get_part_of_title(0.25)
+            part_title = quiz.get_part_of_title(open_rates[0])
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
         if i == quiz.NUM_MAX_HINT * 1 // 2:
             if quiz.exist_hint_image():
@@ -174,7 +174,7 @@ async def hint_loop(quiz, channel):
                 if path_to_file != "":
                     await channel.send(f"{txt}", file=discord.File(path_to_file))
         if i == quiz.NUM_MAX_HINT * 3 // 4:
-            part_title = quiz.get_part_of_title(0.5)
+            part_title = quiz.get_part_of_title(open_rates[1])
             await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
         if quiz.already_answered:
             break
@@ -396,7 +396,7 @@ async def quiz_master(interaction: discord.Integration, title: str) -> None:
     if not quiz.already_answered:
         await channel.send(f"じゃあ始めるぜ...{master_user_name}\n----------------------------------\n")
 
-    await hint_loop(quiz, channel)
+    await hint_loop(quiz, channel, [0, 0])
 
     await wait(1)
     if not quiz.already_answered:
