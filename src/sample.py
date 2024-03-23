@@ -112,14 +112,14 @@ async def on_message(message: discord.Message):
                 quiz.update_answered()
                 logger.debug("correct!")
                 if quiz.user_name_created == message.author.name:
-                    await message.channel.send("出題者が答えてしまった...🫠")
+                    await message.channel.send("出題者が答えてしまった...🫠", silent=True)
                 else:
                     logger.info(f"{quiz.user_name_created},{message.author.name}")
-                    await message.channel.send("おめでとう！正解だ！")
+                    await message.channel.send("おめでとう！正解だ！", silent=True)
                 return
             if quiz.is_close(message.content):
                 masked_title = quiz.get_masked_title(message.content)
-                await message.channel.send(f"> {message.content}\n惜しい！{masked_title}")
+                await message.channel.send(f"> {message.content}\n惜しい！{masked_title}", silent=True)
     except NameError:
         pass
 
@@ -164,27 +164,27 @@ async def hint_loop(quiz, channel, open_rates: list[float] = [0.25, 0.5]):
     for i in range(quiz.NUM_MAX_HINT):
         if i == quiz.NUM_MAX_HINT // 4:
             # len(quiz.title) x 〇 の文字列を表示する
-            await channel.send(f"ヒント：{quiz.get_masked_title('')}")
+            await channel.send(f"ヒント：{quiz.get_masked_title('')}", silent=True)
         if i == quiz.NUM_MAX_HINT * 1 // 2:
             part_title = quiz.get_part_of_title(open_rates[0])
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}", silent=True)
         if i == quiz.NUM_MAX_HINT * 1 // 2:
             if quiz.exist_hint_image():
                 txt, path_to_file = quiz.get_image()
                 if path_to_file != "":
-                    await channel.send(f"{txt}", file=discord.File(path_to_file))
+                    await channel.send(f"{txt}", file=discord.File(path_to_file), silent=True)
         if i == quiz.NUM_MAX_HINT * 3 // 4:
             part_title = quiz.get_part_of_title(open_rates[1])
-            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+            await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}", silent=True)
         if quiz.already_answered:
             break
         await asyncio.sleep(1)
         msg = f"{i+1}/{quiz.NUM_MAX_HINT}: "
         if quiz.exist_hint("LOW"):
-            await channel.send(f"{msg}{quiz.get_hint('LOW')}")
+            await channel.send(f"{msg}{quiz.get_hint('LOW')}", silent=True)
             continue
         if quiz.exist_hint("HIGH"):
-            await channel.send(f"{msg}{quiz.get_hint('HIGH')}")
+            await channel.send(f"{msg}{quiz.get_hint('HIGH')}", silent=True)
             continue
 
 from quiz_genre import QuizGenresChoices
@@ -200,19 +200,19 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
     global quiz
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
-        await interaction.response.send_message(f"このチャンネルでは無効だ！")
+        await interaction.response.send_message(f"このチャンネルでは無効だ！", silent=True)
         return
 
     # use singleton pattern, global quiz object is singleton
     if "quiz" in globals() and not quiz.force_answer:
-        await interaction.response.send_message(f"クイズは既に進行中だ！")
+        await interaction.response.send_message(f"クイズは既に進行中だ！", silent=True)
         return
 
     channel = client.get_channel(interaction.channel_id)
 
     p_bar = ProgressBar(total=4)
     msg = f"ジャンルは{genre.name}だな！"
-    await interaction.response.send_message(f"{p_bar.print(msg)}")
+    await interaction.response.send_message(f"{p_bar.print(msg)}", silent=True)
     send_msg = await interaction.original_response()
 
     try:
@@ -237,27 +237,27 @@ async def quiz_morgana_genre(interaction: discord.Interaction, genre: QuizGenres
         await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
-        await channel.send(f"エラーが発生したぞ！\n{e}")
+        await channel.send(f"エラーが発生したぞ！\n{e}", silent=True)
         logger.error(f"BaseException: {e}")
         return
     await asyncio.sleep(1)
 
     if not quiz.already_answered:
-        await channel.send(f"じゃあ始めるぜ...{genre.name}\n----------------------------------\n")
+        await channel.send(f"じゃあ始めるぜ...{genre.name}\n----------------------------------\n", silent=True)
 
     await hint_loop(quiz, channel)
 
     await wait(5)
     if not quiz.already_answered:
-        await channel.send(f"### 大ヒント！\n{quiz.summary}")
+        await channel.send(f"### 大ヒント！\n{quiz.summary}", silent=True)
 
     await wait(5)
     if not quiz.already_answered:
         part_title = quiz.get_part_of_title(0.75)
-        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}", silent=True)
 
     await wait(10)
-    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
+    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}", silent=True)
 
 
 @client.tree.command(
@@ -272,18 +272,18 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
     global quiz
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
-        await interaction.response.send_message(f"このチャンネルでは無効だ！")
+        await interaction.response.send_message(f"このチャンネルでは無効だ！", silent=True)
         return
 
     # use singleton pattern, global quiz object is singleton
     if "quiz" in globals() and not quiz.force_answer:
-        await interaction.response.send_message(f"クイズは既に進行中だ！")
+        await interaction.response.send_message(f"クイズは既に進行中だ！", silent=True)
         return
 
     channel = client.get_channel(interaction.channel_id)
     p_bar = ProgressBar(total=3)
     msg = f"テーマは{theme}だな！"
-    await interaction.response.send_message(f"{p_bar.print(msg)}")
+    await interaction.response.send_message(f"{p_bar.print(msg)}", silent=True)
     send_msg = await interaction.original_response()
 
     try:
@@ -304,32 +304,32 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
         await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
-        await channel.send(f"エラーが発生したぞ！\n{e}")
+        await channel.send(f"エラーが発生したぞ！\n{e}", silent=True)
         logger.error(f"BaseException: {e}")
         return
     await asyncio.sleep(1)
 
     if not quiz.already_answered:
-        await channel.send(f"じゃあ始めるぜ...{theme}\n----------------------------------\n")
+        await channel.send(f"じゃあ始めるぜ...{theme}\n----------------------------------\n", silent=True)
 
     await hint_loop(quiz, channel)
 
     await wait(1)
     if not quiz.already_answered:
         category = quiz.choice_category()
-        await channel.send(f"目次ヒント:{category}")
+        await channel.send(f"目次ヒント:{category}", silent=True)
 
     await wait(4)
     if not quiz.already_answered:
-        await channel.send(f"### 大ヒント！\n{quiz.summary}")
+        await channel.send(f"### 大ヒント！\n{quiz.summary}", silent=True)
 
     await wait(5)
     if not quiz.already_answered:
         part_title = quiz.get_part_of_title(0.75)
-        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
+        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}", silent=True)
 
     await wait(10)
-    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
+    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}", silent=True)
 
     # clear cache until next quiz
     del quiz
@@ -341,26 +341,26 @@ async def quiz_morgana(interaction: discord.Interaction, theme: str) -> None:
 @app_commands.describe(
     title="好きなお題(正解)を入力してくれ！",
 )
-async def quiz_master(interaction: discord.Integration, title: str) -> None:
+async def quiz_master(interaction: discord.Interaction, title: str) -> None:
     """誰かが答えを決めて、クイズを出題する関数"""
     global quiz
 
     if not interaction.channel_id in [int(config["DISCORD_CHANNEL_ID_QUIZ"]), int(config["DISCORD_CHANNEL_ID_QUIZ_DEBUG"])]:
-        await interaction.response.send_message(f"このチャンネルでは無効だ！")
+        await interaction.response.send_message(f"このチャンネルでは無効だ！", silent=True)
         return
 
     # use singleton pattern, global quiz object is singleton
     if "quiz" in globals() and not quiz.force_answer:
-        await interaction.response.send_message(f"クイズは既に進行中だ！")
+        await interaction.response.send_message(f"クイズは既に進行中だ！", silent=True)
         return
 
     channel = client.get_channel(interaction.channel_id)
     master_user_name = interaction.user.name
     p_bar = ProgressBar(total=2)
     msg = f"お題は{title}だな！"
-    await interaction.response.send_message(f"{msg}", ephemeral=True)
+    await interaction.response.send_message(f"{msg}", ephemeral=True, silent=True)
     msg = f"{master_user_name}からの問題だ！"
-    send_msg = await channel.send(f"{p_bar.print(msg)}")
+    send_msg = await channel.send(f"{p_bar.print(msg)}", silent=True)
     send_msg_master = await interaction.original_response()
 
     try:
@@ -374,7 +374,7 @@ async def quiz_master(interaction: discord.Integration, title: str) -> None:
         quiz.init_hint()
         if quiz.wiki_parser.page.title != title:
             logger.error(f"Title is not matched: {quiz.wiki_parser.page.title} != {title}")
-            await channel.send(f"別のお題を設定してくれ\nerror: 入力されたお題と設定されたお題が不一致")
+            await channel.send(f"別のお題を設定してくれ\nerror: 入力されたお題と設定されたお題が不一致", silent=True)
             await send_msg_master.edit(content=f"お題は{title}だな！\ninput: {title}\nanswer: {quiz.wiki_parser.page.title}")
             del quiz
             return
@@ -388,27 +388,27 @@ async def quiz_master(interaction: discord.Integration, title: str) -> None:
         await send_msg.edit(content=f"{p_bar.print('大ヒント生成 done...')}")
 
     except BaseException as e:
-        await channel.send(f"エラーが発生したぞ！\n{e}")
+        await channel.send(f"エラーが発生したぞ！\n{e}", silent=True)
         logger.error(f"BaseException: {e}")
         return
     await asyncio.sleep(1)
 
     if not quiz.already_answered:
-        await channel.send(f"じゃあ始めるぜ...{master_user_name}\n----------------------------------\n")
+        await channel.send(f"じゃあ始めるぜ...{master_user_name}\n----------------------------------\n", silent=True)
 
     await hint_loop(quiz, channel, [0, 0])
 
     await wait(1)
     if not quiz.already_answered:
         category = quiz.choice_category()
-        await channel.send(f"目次ヒント:{category}")
+        await channel.send(f"目次ヒント:{category}", silent=True)
 
     await wait(4)
     if not quiz.already_answered:
-        await channel.send(f"### 大ヒント！\n{quiz.summary}")
+        await channel.send(f"### 大ヒント！\n{quiz.summary}", silent=True)
 
     await wait(10)
-    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
+    await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}", silent=True)
 
     # clear cache until next quiz
     del quiz
