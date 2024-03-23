@@ -407,11 +407,6 @@ async def quiz_master(interaction: discord.Integration, title: str) -> None:
     if not quiz.already_answered:
         await channel.send(f"### 大ヒント！\n{quiz.summary}")
 
-    await wait(5)
-    if not quiz.already_answered:
-        part_title = quiz.get_part_of_title(0.75)
-        await channel.send(f"ヒント：{quiz.get_masked_title(part_title)}")
-
     await wait(10)
     await channel.send(f"正解は**{quiz.get_answer()}**だ！\n{quiz.get_answer_url()}")
 
